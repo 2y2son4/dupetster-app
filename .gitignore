@@ -43,3 +43,7 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 .env.proxy
+
+# Test output
+/playwright-report
+/test-results
