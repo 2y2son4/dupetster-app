@@ -18,7 +18,9 @@ test('creates a card and shows success toast', async ({ page }) => {
   await page.getByLabel('Song title *').fill('Playwright Song');
   await page.getByLabel('Artist *').fill('Playwright Artist');
   await page.getByLabel('Release year *').fill('2020');
-  await page.getByLabel('Spotify URL *').fill('https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V');
+  await page
+    .getByLabel('Spotify URL *')
+    .fill('https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V');
   await page.getByRole('button', { name: 'Add Card' }).click();
 
   const dismissLoader = page.getByRole('button', { name: 'Dismiss Loader' });
@@ -31,7 +33,9 @@ test('creates a card and shows success toast', async ({ page }) => {
 });
 
 test('restores cards from localStorage after reload', async ({ page }) => {
-  const cards = [makeCard({ id: 1, title: 'Persisted Song', artist: 'Persisted Artist', year: 1999 })];
+  const cards = [
+    makeCard({ id: 1, title: 'Persisted Song', artist: 'Persisted Artist', year: 1999 }),
+  ];
   await seedCards(page, cards);
 
   await page.goto('/');

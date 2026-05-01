@@ -80,7 +80,7 @@ jobs:
           path: dist/dupetster-app/browser
 
   deploy:
-    needs: [e2e, build]
+    needs: [ e2e, build ]
     if: ${{ needs.e2e.result == 'success' && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     environment:

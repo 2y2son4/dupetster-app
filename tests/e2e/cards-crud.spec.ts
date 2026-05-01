@@ -16,7 +16,9 @@ test('edits an existing card', async ({ page }) => {
   const firstCard = page.locator('.grid .card').first();
   await firstCard.getByRole('button', { name: 'Edit' }).click();
   await page.getByLabel('Artist *').fill('Edited Artist');
-  await page.getByLabel('Spotify URL *').fill('https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V');
+  await page
+    .getByLabel('Spotify URL *')
+    .fill('https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V');
   await page.getByRole('button', { name: 'Update Card' }).click();
 
   const dismissLoader = page.getByRole('button', { name: 'Dismiss Loader' });
