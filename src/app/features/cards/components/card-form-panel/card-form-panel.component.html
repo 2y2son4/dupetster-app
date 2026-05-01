@@ -26,9 +26,11 @@
   <div class="field">
     <label for="qrMode">QR compatibility mode</label>
     <select id="qrMode" [ngModel]="qrMode" (ngModelChange)="qrModeChange.emit($event)">
-      <option *ngFor="let mode of qrModes" [value]="mode.value">{{ mode.label }}</option>
+      @for (mode of qrModes; track mode.value) {
+        <option [value]="mode.value">{{ mode.label }}</option>
+      }
     </select>
-    <small class="field-help">Use Hitster/QRSong mode for best scanner compatibility.</small>
+    <small class="field-help">Use Raw URL mode for best scanner compatibility.</small>
   </div>
 
   <div class="field-row">
@@ -45,7 +47,9 @@
   <div class="field">
     <label for="difficulty">Difficulty</label>
     <select id="difficulty" [ngModel]="form.difficulty" (ngModelChange)="onFieldChange('difficulty', $event)">
-      <option *ngFor="let d of difficulties" [value]="d">{{ d }}</option>
+      @for (d of difficulties; track d) {
+        <option [value]="d">{{ d }}</option>
+      }
     </select>
   </div>
 

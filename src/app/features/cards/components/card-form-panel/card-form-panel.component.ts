@@ -19,7 +19,7 @@ export class CardFormPanelComponent {
   @Input({ required: true }) editingCardId: number | null = null;
   @Input({ required: true }) difficulties: Difficulty[] = [];
   @Input({ required: true }) qrModes: QrModeOption[] = [];
-  @Input({ required: true }) qrMode: QrPayloadMode = 'canonical-url';
+  @Input({ required: true }) qrMode: QrPayloadMode = 'raw-url';
   @Input() detectedTrackId = 'Not detected';
 
   @Output() formChange = new EventEmitter<CardDraft>();

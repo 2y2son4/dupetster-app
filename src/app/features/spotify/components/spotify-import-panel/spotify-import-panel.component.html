@@ -28,7 +28,9 @@
     <label for="spotifyImportDifficulty">Default difficulty for imported cards</label>
     <select id="spotifyImportDifficulty" [ngModel]="spotifyImportDifficulty"
       (ngModelChange)="spotifyImportDifficultyChange.emit($event)">
-      <option *ngFor="let d of difficulties" [value]="d">{{ d }}</option>
+      @for (d of difficulties; track d) {
+        <option [value]="d">{{ d }}</option>
+      }
     </select>
   </div>
 
@@ -40,7 +42,9 @@
     <button class="btn btn-primary" (click)="connect.emit()">
       {{ spotifyConnected ? 'Reconnect Spotify Account' : 'Connect Spotify Account' }}
     </button>
-    <button class="btn btn-ghost" *ngIf="spotifyConnected" (click)="disconnect.emit()">Disconnect</button>
+    @if (spotifyConnected) {
+      <button class="btn btn-ghost" (click)="disconnect.emit()">Disconnect</button>
+    }
   </div>
 
   <div class="actions">

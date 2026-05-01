@@ -33,7 +33,7 @@ export class AppStateService {
   readonly pageSize = 12;
   readonly difficulties: Difficulty[] = ['Original', 'Pro', 'Expert'];
   readonly qrModes: QrModeOption[] = [
-    { value: 'canonical-url', label: 'Hitster/QRSong mode (recommended)' },
+    { value: 'canonical-url', label: 'Hitster/QRSong mode' },
     { value: 'spotify-uri', label: 'Spotify URI mode (spotify:track:...)' },
     { value: 'raw-url', label: 'Raw URL mode (exact URL entered)' },
   ];
