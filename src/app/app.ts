@@ -48,6 +48,21 @@ interface SpotifyPlaylistTrack {
   spotifyUrl: string;
 }
 
+interface SpotifyAuthSession {
+  clientId: string;
+  accessToken: string;
+  refreshToken: string | null;
+  expiresAt: number;
+}
+
+interface SpotifyPkceState {
+  clientId: string;
+  state: string;
+  verifier: string;
+  redirectUri: string;
+  createdAt: number;
+}
+
 class SpotifyApiError extends Error {
   constructor(
     message: string,
@@ -67,6 +82,8 @@ class SpotifyApiError extends Error {
 export class App {
   readonly storageKey = 'dupetster_cards_v2';
   readonly spotifyImportKey = 'dupetster_spotify_import_v1';
+  readonly spotifyAuthKey = 'dupetster_spotify_auth_v1';
+  readonly spotifyPkceKey = 'dupetster_spotify_pkce_v1';
   readonly pageSize = 12;
   readonly difficulties: Difficulty[] = ['Original', 'Pro', 'Expert'];
   readonly qrModes: { value: QrPayloadMode; label: string }[] = [
@@ -99,10 +116,13 @@ export class App {
   proxyImportLoading = false;
   busyCount = 0;
   busyMessage = '';
+  spotifyAuthSession: SpotifyAuthSession | null = null;
 
   constructor() {
     void this.restoreCards();
     this.restoreSpotifyImportSettings();
+    this.restoreSpotifyAuthSession();
+    void this.completeSpotifyAuthFromRedirect();
   }
 
   get selectedCount(): number {
@@ -111,6 +131,10 @@ export class App {
 
   get isBusy(): boolean {
     return this.busyCount > 0;
+  }
+
+  get spotifyConnected(): boolean {
+    return !!this.spotifyAuthSession?.accessToken;
   }
 
   get allFilteredSelected(): boolean {
@@ -422,16 +446,52 @@ export class App {
     });
   }
 
-  async importFromSpotifyPlaylist(): Promise<void> {
+  async connectSpotifyAccount(): Promise<void> {
     const clientId = this.spotifyClientId.trim();
-    const clientSecret = this.spotifyClientSecret.trim();
+    if (!clientId) {
+      this.pushToast('Provide Spotify Client ID before connecting your account.', 'error');
+      return;
+    }
+
+    const redirectUri = this.resolveSpotifyRedirectUri();
+    const verifier = this.randomUrlSafeString(64);
+    const state = this.randomUrlSafeString(24);
+    const challenge = await this.createCodeChallenge(verifier);
+
+    const pkceState: SpotifyPkceState = {
+      clientId,
+      state,
+      verifier,
+      redirectUri,
+      createdAt: Date.now(),
+    };
+    sessionStorage.setItem(this.spotifyPkceKey, JSON.stringify(pkceState));
+
+    const authorizeUrl = new URL('https://accounts.spotify.com/authorize');
+    authorizeUrl.searchParams.set('response_type', 'code');
+    authorizeUrl.searchParams.set('client_id', clientId);
+    authorizeUrl.searchParams.set('redirect_uri', redirectUri);
+    authorizeUrl.searchParams.set('code_challenge_method', 'S256');
+    authorizeUrl.searchParams.set('code_challenge', challenge);
+    authorizeUrl.searchParams.set('state', state);
+    authorizeUrl.searchParams.set('scope', 'playlist-read-private playlist-read-collaborative');
+
+    this.persistSpotifyImportSettings();
+    window.location.href = authorizeUrl.toString();
+  }
+
+  disconnectSpotifyAccount(): void {
+    this.spotifyAuthSession = null;
+    localStorage.removeItem(this.spotifyAuthKey);
+    sessionStorage.removeItem(this.spotifyPkceKey);
+    this.pushToast('Spotify account disconnected.', 'info');
+  }
+
+  async importFromSpotifyPlaylist(): Promise<void> {
     const playlistId = this.extractSpotifyPlaylistId(this.spotifyPlaylistInput);
 
-    if (!clientId || !clientSecret || !playlistId) {
-      this.pushToast(
-        'Provide Client ID, Client Secret, and a valid Spotify playlist URL/ID.',
-        'error',
-      );
+    if (!playlistId) {
+      this.pushToast('Provide a valid Spotify playlist URL/ID.', 'error');
       return;
     }
 
@@ -439,12 +499,28 @@ export class App {
     this.persistSpotifyImportSettings();
 
     try {
-      const accessToken = await this.fetchSpotifyAccessToken(clientId, clientSecret);
-      if (!accessToken) {
-        this.pushToast('Failed to authenticate with Spotify. Check credentials.', 'error');
+      const userToken = await this.getSpotifyUserAccessToken();
+      if (userToken) {
+        const playlistTracks = await this.fetchSpotifyPlaylistTracks(playlistId, userToken);
+        if (playlistTracks.length === 0) {
+          this.pushToast('No track items found in this playlist.', 'warning');
+          return;
+        }
+        await this.importSpotifyTracksIntoCards(playlistTracks);
         return;
       }
 
+      const clientId = this.spotifyClientId.trim();
+      const clientSecret = this.spotifyClientSecret.trim();
+      if (!clientId || !clientSecret) {
+        this.pushToast(
+          'Connect Spotify account first, or provide Client ID + Client Secret for legacy import.',
+          'error',
+        );
+        return;
+      }
+
+      const accessToken = await this.fetchSpotifyClientCredentialsToken(clientId, clientSecret);
       const playlistTracks = await this.fetchSpotifyPlaylistTracks(playlistId, accessToken);
       if (playlistTracks.length === 0) {
         this.pushToast('No track items found in this playlist.', 'warning');
@@ -460,7 +536,7 @@ export class App {
 
         if (error.status === 403) {
           this.pushToast(
-            'Spotify denied access (403). Playlist may be private or app is in Development Mode without the playlist owner added as a test user.',
+            'Spotify denied playlist access (403) for this app/token type. This often happens with Client Credentials; use OAuth user login flow for playlist import.',
             'error',
           );
           return;
@@ -497,13 +573,18 @@ export class App {
         `http://127.0.0.1:8787/api/playlist-tracks?playlist=${encodeURIComponent(this.spotifyPlaylistInput)}`,
       );
 
-      if (!response.ok) {
-        throw new Error('proxy-request-failed');
-      }
-
       const payload = (await response.json()) as {
         tracks?: SpotifyPlaylistTrack[];
+        error?: string;
       };
+
+      if (!response.ok) {
+        const details = (payload.error ?? '').toLowerCase();
+        if (response.status === 500 && details.includes('request failed (403)')) {
+          throw new Error('proxy-spotify-forbidden');
+        }
+        throw new Error(payload.error ?? `proxy-request-failed-${response.status}`);
+      }
 
       const tracks = payload.tracks ?? [];
       if (tracks.length === 0) {
@@ -512,7 +593,15 @@ export class App {
       }
 
       await this.importSpotifyTracksIntoCards(tracks);
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.message === 'proxy-spotify-forbidden') {
+        this.pushToast(
+          'Spotify denied playlist access (403) for Client Credentials. Proxy is working, but playlist import needs OAuth user login flow.',
+          'error',
+        );
+        return;
+      }
+
       this.pushToast(
         'Local proxy import failed. Start it with "npm run start:proxy" and set SPOTIFY_CLIENT_ID/SECRET in .env.proxy (or terminal env vars).',
         'error',
@@ -881,6 +970,107 @@ export class App {
     }
   }
 
+  private restoreSpotifyAuthSession(): void {
+    const raw = localStorage.getItem(this.spotifyAuthKey);
+    if (!raw) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as SpotifyAuthSession;
+      if (!parsed.clientId || !parsed.accessToken || !parsed.expiresAt) {
+        return;
+      }
+      this.spotifyAuthSession = {
+        clientId: parsed.clientId,
+        accessToken: parsed.accessToken,
+        refreshToken: parsed.refreshToken ?? null,
+        expiresAt: Number(parsed.expiresAt),
+      };
+
+      if (!this.spotifyClientId) {
+        this.spotifyClientId = parsed.clientId;
+      }
+    } catch {
+      this.spotifyAuthSession = null;
+    }
+  }
+
+  private persistSpotifyAuthSession(): void {
+    if (!this.spotifyAuthSession) {
+      localStorage.removeItem(this.spotifyAuthKey);
+      return;
+    }
+
+    localStorage.setItem(this.spotifyAuthKey, JSON.stringify(this.spotifyAuthSession));
+  }
+
+  private async completeSpotifyAuthFromRedirect(): Promise<void> {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const authError = params.get('error');
+
+    if (!code && !authError) {
+      return;
+    }
+
+    if (authError) {
+      this.pushToast(`Spotify login failed: ${authError}`, 'error');
+      this.clearSpotifyAuthQueryFromUrl();
+      return;
+    }
+
+    const pkceRaw = sessionStorage.getItem(this.spotifyPkceKey);
+    if (!pkceRaw || !state) {
+      this.pushToast('Spotify login session expired. Please connect again.', 'error');
+      this.clearSpotifyAuthQueryFromUrl();
+      return;
+    }
+
+    const authCode = code;
+    if (!authCode) {
+      this.pushToast('Spotify login response is missing authorization code.', 'error');
+      this.clearSpotifyAuthQueryFromUrl();
+      return;
+    }
+
+    let pkceState: SpotifyPkceState;
+    try {
+      pkceState = JSON.parse(pkceRaw) as SpotifyPkceState;
+    } catch {
+      this.pushToast('Invalid Spotify login session. Please connect again.', 'error');
+      this.clearSpotifyAuthQueryFromUrl();
+      return;
+    }
+
+    if (pkceState.state !== state) {
+      this.pushToast('Spotify login validation failed (state mismatch).', 'error');
+      sessionStorage.removeItem(this.spotifyPkceKey);
+      this.clearSpotifyAuthQueryFromUrl();
+      return;
+    }
+
+    try {
+      await this.withBusy('Connecting Spotify account...', async () => {
+        const session = await this.exchangeSpotifyCodeForSession(authCode, pkceState);
+        this.spotifyAuthSession = session;
+        this.spotifyClientId = session.clientId;
+        this.persistSpotifyAuthSession();
+        this.persistSpotifyImportSettings();
+      });
+      this.pushToast('Spotify account connected.', 'success');
+    } catch {
+      this.pushToast(
+        'Could not complete Spotify login. Verify redirect URI in dashboard.',
+        'error',
+      );
+    } finally {
+      sessionStorage.removeItem(this.spotifyPkceKey);
+      this.clearSpotifyAuthQueryFromUrl();
+    }
+  }
+
   private persistSpotifyImportSettings(): void {
     localStorage.setItem(
       this.spotifyImportKey,
@@ -891,6 +1081,168 @@ export class App {
         difficulty: this.spotifyImportDifficulty,
       }),
     );
+  }
+
+  private async getSpotifyUserAccessToken(): Promise<string | null> {
+    if (!this.spotifyAuthSession) {
+      return null;
+    }
+
+    if (Date.now() < this.spotifyAuthSession.expiresAt - 30_000) {
+      return this.spotifyAuthSession.accessToken;
+    }
+
+    if (!this.spotifyAuthSession.refreshToken) {
+      this.disconnectSpotifyAccount();
+      this.pushToast('Spotify session expired. Connect your account again.', 'warning');
+      return null;
+    }
+
+    try {
+      this.spotifyAuthSession = await this.refreshSpotifyAccessToken(this.spotifyAuthSession);
+      this.persistSpotifyAuthSession();
+      return this.spotifyAuthSession.accessToken;
+    } catch {
+      this.disconnectSpotifyAccount();
+      this.pushToast('Spotify session refresh failed. Connect your account again.', 'error');
+      return null;
+    }
+  }
+
+  private async exchangeSpotifyCodeForSession(
+    code: string,
+    pkceState: SpotifyPkceState,
+  ): Promise<SpotifyAuthSession> {
+    const body = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: pkceState.redirectUri,
+      client_id: pkceState.clientId,
+      code_verifier: pkceState.verifier,
+    }).toString();
+
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    if (!response.ok) {
+      throw new SpotifyApiError('spotify-oauth-code-exchange-failed', response.status);
+    }
+
+    const json = (await response.json()) as {
+      access_token?: string;
+      refresh_token?: string;
+      expires_in?: number;
+    };
+
+    if (!json.access_token || !json.expires_in) {
+      throw new SpotifyApiError('spotify-oauth-invalid-token-response', 500);
+    }
+
+    return {
+      clientId: pkceState.clientId,
+      accessToken: json.access_token,
+      refreshToken: json.refresh_token ?? null,
+      expiresAt: Date.now() + json.expires_in * 1000,
+    };
+  }
+
+  private async refreshSpotifyAccessToken(
+    session: SpotifyAuthSession,
+  ): Promise<SpotifyAuthSession> {
+    const body = new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: session.refreshToken ?? '',
+      client_id: session.clientId,
+    }).toString();
+
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    if (!response.ok) {
+      throw new SpotifyApiError('spotify-oauth-refresh-failed', response.status);
+    }
+
+    const json = (await response.json()) as {
+      access_token?: string;
+      refresh_token?: string;
+      expires_in?: number;
+    };
+
+    if (!json.access_token || !json.expires_in) {
+      throw new SpotifyApiError('spotify-oauth-invalid-refresh-response', 500);
+    }
+
+    return {
+      clientId: session.clientId,
+      accessToken: json.access_token,
+      refreshToken: json.refresh_token ?? session.refreshToken ?? null,
+      expiresAt: Date.now() + json.expires_in * 1000,
+    };
+  }
+
+  private resolveSpotifyRedirectUri(): string {
+    const { origin, hostname, port } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+      const localPort = port || '4200';
+      return `http://127.0.0.1:${localPort}/callback`;
+    }
+
+    const appRoot = this.getAppRootPath().replace(/\/$/, '');
+    return `${origin}${appRoot}/callback`;
+  }
+
+  private getAppRootPath(): string {
+    const { hostname, pathname } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return '/';
+    }
+
+    const firstSegment = pathname.split('/').filter(Boolean)[0];
+    return firstSegment ? `/${firstSegment}/` : '/';
+  }
+
+  private clearSpotifyAuthQueryFromUrl(): void {
+    const shouldResetToRoot = /\/callback\/?$/.test(window.location.pathname);
+    const nextPath = shouldResetToRoot ? this.getAppRootPath() : window.location.pathname;
+    window.history.replaceState({}, '', `${nextPath}${window.location.hash || ''}`);
+  }
+
+  private randomUrlSafeString(length: number): string {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    const values = new Uint8Array(length);
+    crypto.getRandomValues(values);
+
+    let result = '';
+    for (const value of values) {
+      result += charset[value % charset.length];
+    }
+    return result;
+  }
+
+  private async createCodeChallenge(verifier: string): Promise<string> {
+    const encoded = new TextEncoder().encode(verifier);
+    const digest = await crypto.subtle.digest('SHA-256', encoded);
+    return this.base64UrlEncode(digest);
+  }
+
+  private base64UrlEncode(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (const byte of bytes) {
+      binary += String.fromCharCode(byte);
+    }
+
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
 
   private extractSpotifyPlaylistId(input: string): string | null {
@@ -917,10 +1269,10 @@ export class App {
     return null;
   }
 
-  private async fetchSpotifyAccessToken(
+  private async fetchSpotifyClientCredentialsToken(
     clientId: string,
     clientSecret: string,
-  ): Promise<string | null> {
+  ): Promise<string> {
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -941,7 +1293,10 @@ export class App {
     }
 
     const json = (await response.json()) as { access_token?: string };
-    return json.access_token ?? null;
+    if (!json.access_token) {
+      throw new SpotifyApiError('spotify-token-response-missing-access-token', 500);
+    }
+    return json.access_token;
   }
 
   private async fetchSpotifyPlaylistTracks(

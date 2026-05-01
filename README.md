@@ -30,8 +30,18 @@ You can also create or edit cards manually from the form.
 
 Dupetster supports two import paths:
 
-1. Direct browser import (Client ID + Client Secret in UI)
-2. Local proxy import (recommended; credentials stay in `.env.proxy`)
+1. Spotify Login import (recommended; OAuth PKCE, works with public/private playlists)
+2. Legacy Client Credentials import (Client ID + Client Secret)
+3. Local proxy import (credentials stay in `.env.proxy`)
+
+### Recommended flow (Spotify Login)
+
+1. Enter your Spotify Client ID in the app.
+2. Click `Connect Spotify Account`.
+3. Approve access on Spotify.
+4. Back in Dupetster, click `Import Playlist (Spotify Login)`.
+
+This flow is the most reliable for playlist access.
 
 Start the local proxy:
 
@@ -103,10 +113,9 @@ For this project, use these settings in your Spotify app:
 Use:
 
 - `http://127.0.0.1:4200/callback`
-- `http://localhost:4200/callback`
 - `https://2y2son4.github.io/dupetster-app/callback`
 
-Note: for local Angular dev server, prefer `http://localhost:4200/callback` (not `https://localhost:4200/callback`).
+Note: Spotify now requires explicit loopback IPs for local HTTP redirects. Use `127.0.0.1` (not `localhost`).
 
 ## Future Android app notes
 

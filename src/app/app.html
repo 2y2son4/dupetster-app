@@ -59,9 +59,22 @@
         </select>
       </div>
 
+      <p class="hint compact">
+        Spotify login status: <strong>{{ spotifyConnected ? 'Connected' : 'Not connected' }}</strong>
+      </p>
+
+      <div class="actions">
+        <button class="btn btn-primary" (click)="connectSpotifyAccount()">
+          {{ spotifyConnected ? 'Reconnect Spotify Account' : 'Connect Spotify Account' }}
+        </button>
+        <button class="btn btn-ghost" *ngIf="spotifyConnected" (click)="disconnectSpotifyAccount()">
+          Disconnect
+        </button>
+      </div>
+
       <div class="actions">
         <button class="btn btn-primary" [disabled]="spotifyImportLoading" (click)="importFromSpotifyPlaylist()">
-          {{ spotifyImportLoading ? 'Importing playlist...' : 'Import Playlist' }}
+          {{ spotifyImportLoading ? 'Importing playlist...' : (spotifyConnected ? 'Import Playlist (Spotify Login)' : 'Import Playlist (Legacy)') }}
         </button>
         <button class="btn btn-ghost" [disabled]="proxyImportLoading" (click)="importFromPlaylistViaProxy()">
           {{ proxyImportLoading ? 'Importing via proxy...' : 'One-Click Import via Local Proxy' }}
