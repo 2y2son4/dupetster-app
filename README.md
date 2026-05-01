@@ -14,6 +14,7 @@ npm start
 ```
 
 The app runs at `http://localhost:4200/`.
+For Spotify OAuth, always open the app at `http://127.0.0.1:4200/`.
 
 ## How to use
 
