@@ -1,0 +1,70 @@
+<article class="panel">
+  <h2>Import Spotify Playlist</h2>
+  <p class="hint compact">
+    Local-only mode: uses Spotify Client Credentials (same style as the Python hitster tool) and imports
+    track-canonical cards. Redirect URIs are mostly for future user-login flows; proxy mode works with
+    credentials from your local .env.proxy file.
+  </p>
+
+  <div class="field">
+    <label for="spotifyClientId">Spotify Client ID *</label>
+    <input id="spotifyClientId" type="text" [ngModel]="spotifyClientId"
+      (ngModelChange)="spotifyClientIdChange.emit($event)" />
+  </div>
+
+  <div class="field">
+    <label for="spotifyClientSecret">Spotify Client Secret *</label>
+    <input id="spotifyClientSecret" type="password" [ngModel]="spotifyClientSecret"
+      (ngModelChange)="spotifyClientSecretChange.emit($event)" />
+  </div>
+
+  <div class="field">
+    <label for="spotifyPlaylistInput">Playlist URL or Playlist ID *</label>
+    <input id="spotifyPlaylistInput" type="text" [ngModel]="spotifyPlaylistInput"
+      (ngModelChange)="spotifyPlaylistInputChange.emit($event)" />
+  </div>
+
+  <div class="field">
+    <label for="spotifyImportDifficulty">Default difficulty for imported cards</label>
+    <select id="spotifyImportDifficulty" [ngModel]="spotifyImportDifficulty"
+      (ngModelChange)="spotifyImportDifficultyChange.emit($event)">
+      <option *ngFor="let d of difficulties" [value]="d">{{ d }}</option>
+    </select>
+  </div>
+
+  <p class="hint compact">
+    Spotify login status: <strong>{{ spotifyConnected ? 'Connected' : 'Not connected' }}</strong>
+  </p>
+
+  <div class="actions">
+    <button class="btn btn-primary" (click)="connect.emit()">
+      {{ spotifyConnected ? 'Reconnect Spotify Account' : 'Connect Spotify Account' }}
+    </button>
+    <button class="btn btn-ghost" *ngIf="spotifyConnected" (click)="disconnect.emit()">Disconnect</button>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" [disabled]="spotifyImportLoading" (click)="importPlaylist.emit()">
+      {{ spotifyImportLoading ? 'Importing playlist...' : (spotifyConnected ? 'Import Playlist (Spotify Login)' : 'Import Playlist (Legacy)') }}
+    </button>
+    <button class="btn btn-ghost" [disabled]="proxyImportLoading" (click)="importProxy.emit()">
+      {{ proxyImportLoading ? 'Importing via proxy...' : 'One-Click Import via Local Proxy' }}
+    </button>
+  </div>
+
+  <div class="field">
+    <label for="spotifyTrackListInput">Workaround: Paste track URLs, URIs, or IDs</label>
+    <textarea id="spotifyTrackListInput" rows="6" [ngModel]="spotifyTrackListInput"
+      (ngModelChange)="spotifyTrackListInputChange.emit($event)"
+      placeholder="One Spotify track URL, URI, or ID per line"></textarea>
+    <small class="field-help">
+      Use this when playlist import is blocked. Export or copy the songs, then paste one track per line.
+    </small>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" [disabled]="spotifyTrackListImportLoading" (click)="importTrackList.emit()">
+      {{ spotifyTrackListImportLoading ? 'Importing track list...' : 'Import Pasted Track List' }}
+    </button>
+  </div>
+</article>

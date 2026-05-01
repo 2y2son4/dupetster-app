@@ -1,0 +1,10 @@
+<div class="toast-layer">
+  <div class="toast" *ngFor="let t of toasts" [class]="'toast ' + t.type">
+    <div class="toast-body">
+      <span>{{ t.text }}</span>
+      <button class="toast-close" type="button" (click)="dismiss.emit(t.id)" aria-label="Dismiss notification">
+        x
+      </button>
+    </div>
+  </div>
+</div>

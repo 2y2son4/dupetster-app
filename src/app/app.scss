@@ -1,4 +1,5 @@
-:host {
+:host,
+app-root {
   --ink: #111;
   --muted: #4a4a4a;
   --line: #111;
@@ -96,12 +97,14 @@ label {
 }
 
 input,
+textarea,
 select,
 button {
   font: inherit;
 }
 
 input,
+textarea,
 select {
   width: 100%;
   border: 2px solid #111;
@@ -112,10 +115,16 @@ select {
 }
 
 input:focus,
+textarea:focus,
 select:focus {
   outline: 2px solid #111;
   outline-offset: 1px;
   border-color: #111;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 120px;
 }
 
 .actions,
@@ -436,6 +445,23 @@ select:focus {
   border-radius: 0;
   color: #fff;
   box-shadow: none;
+}
+
+.toast-body {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toast-close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
 }
 
 .toast.success {

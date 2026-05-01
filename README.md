@@ -4,6 +4,66 @@ Dupetster is a music card game app inspired by Hitster. It imports Spotify playl
 
 Main use case: import a Spotify playlist, select cards, and print/export a 4x4 card sheet ready to cut.
 
+## Project architecture
+
+The app now follows a cleaner Angular structure:
+
+- `app.ts` is now a container/orchestrator component
+- `features/**/components` contains presentational UI components
+- `ui/components` contains reusable shell widgets (toast, loader, modal)
+- `core/models` contains domain types and contracts
+- `core/services` contains reusable business/integration logic
+
+## Source tree
+
+```text
+src/
+  app/
+    app.ts
+    app.html
+    app.scss
+    app.config.ts
+    app.routes.ts
+    core/
+      models/
+        card.model.ts
+        spotify.model.ts
+        ui.model.ts
+      services/
+        qr-code.service.ts
+        spotify-api.service.ts
+    features/
+      cards/
+        components/
+          card-form-panel/
+            card-form-panel.component.ts
+            card-form-panel.component.html
+          cards-section/
+            cards-section.component.ts
+            cards-section.component.html
+          live-preview-panel/
+            live-preview-panel.component.ts
+            live-preview-panel.component.html
+      spotify/
+        components/
+          spotify-import-panel/
+            spotify-import-panel.component.ts
+            spotify-import-panel.component.html
+    ui/
+      components/
+        confirm-modal/
+          confirm-modal.component.ts
+          confirm-modal.component.html
+        loader-overlay/
+          loader-overlay.component.ts
+          loader-overlay.component.html
+        toast-layer/
+          toast-layer.component.ts
+          toast-layer.component.html
+  main.ts
+  styles.scss
+```
+
 ## Run locally
 
 Install dependencies and start the Angular app:
@@ -76,15 +136,15 @@ Minimal accepted example:
 [
   {
     "title": "Blinding Lights",
-    "artist": "The Weeknd",
+    "artist": "The Weekend",
     "year": 2019,
-    "spotifyUrl": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b"
+    "spotifyUrl": "https://open.spotify.com/track/id-string"
   },
   {
     "title": "Billie Jean",
     "artist": "Michael Jackson",
     "year": 1983,
-    "spotifyUrl": "https://open.spotify.com/track/5ChkMS8OtdzJeqyybCc9R5",
+    "spotifyUrl": "https://open.spotify.com/track/id-string",
     "album": "Thriller",
     "genre": "Pop",
     "difficulty": "Original"

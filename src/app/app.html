@@ -1,26 +1,11 @@
-<div class="toast-layer">
-  <div class="toast" *ngFor="let t of toasts" [class]="'toast ' + t.type">
-    {{ t.text }}
-  </div>
-</div>
+<app-toast-layer [toasts]="state.toasts" (dismiss)="state.dismissToast($event)"></app-toast-layer>
 
-<div class="loader-overlay" *ngIf="isBusy" aria-live="polite" aria-busy="true">
-  <div class="loader-card">
-    <div class="loader-spinner" aria-hidden="true"></div>
-    <p>{{ busyMessage || 'Working...' }}</p>
-  </div>
-</div>
+<app-loader-overlay [isBusy]="state.isBusy" [busyMessage]="state.busyMessage"
+  (dismiss)="state.dismissLoader()"></app-loader-overlay>
 
-<div class="modal" *ngIf="cardPendingDelete">
-  <div class="modal-content">
-    <h3>Delete card</h3>
-    <p>Are you sure you want to remove this card?</p>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" (click)="cancelDelete()">Cancel</button>
-      <button class="btn btn-danger" (click)="confirmDelete()">Delete</button>
-    </div>
-  </div>
-</div>
+<app-confirm-modal [visible]="!!state.cardPendingDelete" title="Delete card"
+  message="Are you sure you want to remove this card?" confirmLabel="Delete" (cancel)="state.cancelDelete()"
+  (confirm)="state.confirmDelete()"></app-confirm-modal>
 
 <header class="hero">
   <h1>Dupetster</h1>
@@ -29,239 +14,54 @@
 
 <main class="page">
   <section class="left">
-    <article class="panel">
-      <h2>Import Spotify Playlist</h2>
-      <p class="hint compact">
-        Local-only mode: uses Spotify Client Credentials (same style as the Python hitster tool) and imports
-        track-canonical cards. Redirect URIs are mostly for future user-login flows; proxy mode works with
-        credentials from your local .env.proxy file.
-      </p>
+    <!--
+      <app-spotify-import-panel
+        [spotifyClientId]="state.spotifyClientId"
+        [spotifyClientSecret]="state.spotifyClientSecret"
+        [spotifyPlaylistInput]="state.spotifyPlaylistInput"
+        [spotifyTrackListInput]="state.spotifyTrackListInput"
+        [spotifyImportDifficulty]="state.spotifyImportDifficulty"
+        [difficulties]="state.difficulties"
+        [spotifyConnected]="state.spotifyConnected"
+        [spotifyImportLoading]="state.spotifyImportLoading"
+        [proxyImportLoading]="state.proxyImportLoading"
+        [spotifyTrackListImportLoading]="state.spotifyTrackListImportLoading"
+        (spotifyClientIdChange)="state.spotifyClientId = $event"
+        (spotifyClientSecretChange)="state.spotifyClientSecret = $event"
+        (spotifyPlaylistInputChange)="state.spotifyPlaylistInput = $event"
+        (spotifyTrackListInputChange)="state.spotifyTrackListInput = $event"
+        (spotifyImportDifficultyChange)="state.spotifyImportDifficulty = $event"
+        (connect)="state.connectSpotifyAccount()"
+        (disconnect)="state.disconnectSpotifyAccount()"
+        (importPlaylist)="state.importFromSpotifyPlaylist()"
+        (importProxy)="state.importFromPlaylistViaProxy()"
+        (importTrackList)="state.importFromSpotifyTrackList()"
+      ></app-spotify-import-panel>
+    -->
 
-      <div class="field">
-        <label for="spotifyClientId">Spotify Client ID *</label>
-        <input id="spotifyClientId" type="text" [(ngModel)]="spotifyClientId" />
-      </div>
+    <app-card-form-panel [form]="state.form" [editingCardId]="state.editingCardId" [difficulties]="state.difficulties"
+      [qrModes]="state.qrModes" [qrMode]="state.qrMode"
+      [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)" (formChange)="state.onFormChange($event)"
+      (qrModeChange)="state.qrMode = $event" (save)="state.saveOrUpdateCard()"
+      (clear)="state.resetForm()"></app-card-form-panel>
 
-      <div class="field">
-        <label for="spotifyClientSecret">Spotify Client Secret *</label>
-        <input id="spotifyClientSecret" type="password" [(ngModel)]="spotifyClientSecret" />
-      </div>
-
-      <div class="field">
-        <label for="spotifyPlaylistInput">Playlist URL or Playlist ID *</label>
-        <input id="spotifyPlaylistInput" type="text" [(ngModel)]="spotifyPlaylistInput" />
-      </div>
-
-      <div class="field">
-        <label for="spotifyImportDifficulty">Default difficulty for imported cards</label>
-        <select id="spotifyImportDifficulty" [(ngModel)]="spotifyImportDifficulty">
-          <option *ngFor="let d of difficulties" [value]="d">{{ d }}</option>
-        </select>
-      </div>
-
-      <p class="hint compact">
-        Spotify login status: <strong>{{ spotifyConnected ? 'Connected' : 'Not connected' }}</strong>
-      </p>
-
-      <div class="actions">
-        <button class="btn btn-primary" (click)="connectSpotifyAccount()">
-          {{ spotifyConnected ? 'Reconnect Spotify Account' : 'Connect Spotify Account' }}
-        </button>
-        <button class="btn btn-ghost" *ngIf="spotifyConnected" (click)="disconnectSpotifyAccount()">
-          Disconnect
-        </button>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-primary" [disabled]="spotifyImportLoading" (click)="importFromSpotifyPlaylist()">
-          {{ spotifyImportLoading ? 'Importing playlist...' : (spotifyConnected ? 'Import Playlist (Spotify Login)' : 'Import Playlist (Legacy)') }}
-        </button>
-        <button class="btn btn-ghost" [disabled]="proxyImportLoading" (click)="importFromPlaylistViaProxy()">
-          {{ proxyImportLoading ? 'Importing via proxy...' : 'One-Click Import via Local Proxy' }}
-        </button>
-      </div>
-    </article>
-
-    <article class="panel">
-      <h2>{{ editingCardId ? 'Edit Card' : 'Create Card' }}</h2>
-
-      <div class="field">
-        <label for="title">Song title *</label>
-        <input id="title" type="text" [(ngModel)]="form.title" />
-      </div>
-
-      <div class="field">
-        <label for="artist">Artist *</label>
-        <input id="artist" type="text" [(ngModel)]="form.artist" />
-      </div>
-
-      <div class="field">
-        <label for="year">Release year *</label>
-        <input id="year" type="number" min="1900" max="2100" [(ngModel)]="form.year" />
-      </div>
-
-      <div class="field">
-        <label for="spotify">Spotify URL *</label>
-        <input id="spotify" type="url" [(ngModel)]="form.spotifyUrl" />
-        <small class="field-help">Detected track ID: {{ getDetectedTrackId(form.spotifyUrl) }}</small>
-      </div>
-
-      <div class="field">
-        <label for="qrMode">QR compatibility mode</label>
-        <select id="qrMode" [(ngModel)]="qrMode">
-          <option *ngFor="let mode of qrModes" [value]="mode.value">{{ mode.label }}</option>
-        </select>
-        <small class="field-help">Use Hitster/QRSong mode for best scanner compatibility.</small>
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label for="album">Album</label>
-          <input id="album" type="text" [(ngModel)]="form.album" />
-        </div>
-        <div class="field">
-          <label for="genre">Genre</label>
-          <input id="genre" type="text" [(ngModel)]="form.genre" />
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="difficulty">Difficulty</label>
-        <select id="difficulty" [(ngModel)]="form.difficulty">
-          <option *ngFor="let d of difficulties" [value]="d">{{ d }}</option>
-        </select>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-primary" (click)="saveOrUpdateCard()">
-          {{ editingCardId ? 'Update Card' : 'Add Card' }}
-        </button>
-        <button class="btn btn-ghost" (click)="resetForm()">Clear</button>
-      </div>
-    </article>
-
-    <article class="panel preview-panel">
-      <h2>Live Preview</h2>
-      <label class="toggle">
-        <input type="checkbox" [(ngModel)]="revealYear" />
-        Reveal year
-      </label>
-
-      <div class="preview-card" [class.empty]="!form.title">
-        <ng-container *ngIf="form.title; else emptyPreview">
-          <div class="preview-title">{{ form.title }}</div>
-          <div class="preview-year">{{ revealYear ? form.year : 'YEAR' }}</div>
-          <div class="preview-artist">{{ form.artist }}</div>
-          <div class="preview-split"></div>
-          <div class="preview-qr">
-            <img *ngIf="previewQr()" [src]="previewQr()" alt="QR preview" />
-            <span *ngIf="!previewQr()">QR</span>
-          </div>
-        </ng-container>
-        <ng-template #emptyPreview>
-          <p>Fill required fields to preview the card.</p>
-        </ng-template>
-      </div>
-    </article>
+    <app-live-preview-panel [form]="state.form" [revealYear]="state.revealYear" [previewQr]="state.previewQr()"
+      (revealYearChange)="state.onRevealYearChange($event)"></app-live-preview-panel>
   </section>
 
-  <section class="right panel">
-    <div class="toolbar">
-      <h2>Cards ({{ filteredCards.length }})</h2>
-      <div class="toolbar-controls">
-        <input type="text" placeholder="Search title or artist" [(ngModel)]="searchQuery"
-          (ngModelChange)="applyFilters()" />
-        <select [(ngModel)]="difficultyFilter" (ngModelChange)="applyFilters()">
-          <option value="">All difficulties</option>
-          <option *ngFor="let d of difficulties" [value]="d">{{ d }}</option>
-        </select>
-        <select [(ngModel)]="sortMode" (ngModelChange)="applyFilters()">
-          <option value="recent">Recent</option>
-          <option value="year">Year</option>
-          <option value="title">Title</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="quick-actions">
-      <button class="btn btn-ghost" [disabled]="filteredCards.length === 0" (click)="toggleSelectAllFiltered()">
-        {{ allFilteredSelected ? 'Unselect All Filtered' : 'Select All Filtered' }}
-      </button>
-      <button class="btn btn-primary" [disabled]="selectedCount === 0 || pdfLoading" (click)="exportPdf()">
-        <ng-container *ngIf="!pdfLoading; else loadingPdf">Export PDF</ng-container>
-      </button>
-      <ng-template #loadingPdf>Generating...</ng-template>
-
-      <button class="btn btn-primary" [disabled]="selectedCount === 0" (click)="printSelected()">Print</button>
-      <button class="btn btn-ghost" (click)="exportJson()">Export JSON</button>
-      <button class="btn btn-ghost" (click)="exportCsv()">Export CSV</button>
-      <button class="btn btn-ghost" [disabled]="cards.length === 0" (click)="regenerateQrForAllCards()">
-        Rebuild QR (Current Mode)
-      </button>
-
-      <label class="btn btn-ghost file-btn">
-        Import JSON
-        <input type="file" accept="application/json,.json" (change)="onImportJson($event)" />
-      </label>
-
-      <label class="btn btn-ghost file-btn">
-        Import CSV
-        <input type="file" accept="text/csv,.csv" (change)="onImportCsv($event)" />
-      </label>
-    </div>
-
-    <p class="hint">
-      Select cards by clicking them. Print and PDF use the selected cards in a 4x4 A4 sheet template.
-      Current QR mode: <strong>{{ getQrModeLabel(qrMode) }}</strong>.
-    </p>
-
-    <div class="grid" *ngIf="pagedCards.length > 0; else noData">
-      <article class="card" *ngFor="let card of pagedCards; trackBy: trackById" [class.selected]="isSelected(card.id)"
-        (click)="toggleSelect(card.id)">
-        <h3>{{ card.title }}</h3>
-        <div class="year">{{ revealYear ? card.year : 'YEAR' }}</div>
-        <p>{{ card.artist }}</p>
-        <div class="split"></div>
-        <div class="qr-box">
-          <img [src]="card.qrDataUrl" alt="Card QR" />
-        </div>
-        <div class="chips">
-          <span>{{ card.difficulty }}</span>
-          <span *ngIf="card.genre">{{ card.genre }}</span>
-        </div>
-        <div class="card-actions" (click)="$event.stopPropagation()">
-          <button class="btn btn-small" (click)="editCard(card)">Edit</button>
-          <button class="btn btn-small" (click)="duplicateCard(card)">Duplicate</button>
-          <button class="btn btn-small btn-danger" (click)="askDelete(card)">Delete</button>
-        </div>
-      </article>
-    </div>
-
-    <ng-template #noData>
-      <div class="empty">
-        <h3>No cards yet</h3>
-        <p>Create a card or import CSV/JSON.</p>
-      </div>
-    </ng-template>
-
-    <div class="pager" *ngIf="totalPages > 1">
-      <button class="btn btn-ghost" [disabled]="currentPage === 1" (click)="previousPage()">Previous</button>
-      <span>Page {{ currentPage }} / {{ totalPages }}</span>
-      <button class="btn btn-ghost" [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
-    </div>
-
-    <section class="print-sheet" aria-hidden="true">
-      <div class="sheet-page" *ngFor="let page of selectedPages">
-        <div class="sheet-card" *ngFor="let card of page">
-          <div class="sheet-title">{{ card.title }}</div>
-          <div class="sheet-year">{{ revealYear ? card.year : 'YEAR' }}</div>
-          <div class="sheet-artist">{{ card.artist }}</div>
-          <div class="sheet-separator"></div>
-          <div class="sheet-qr-box">
-            <img [src]="card.qrDataUrl" alt="Print QR" />
-          </div>
-        </div>
-      </div>
-    </section>
-  </section>
+  <app-cards-section [filteredCards]="state.filteredCards" [pagedCards]="state.pagedCards"
+    [selectedPages]="state.selectedPages" [selectedCardIds]="state.selectedCardIds" [difficulties]="state.difficulties"
+    [searchQuery]="state.searchQuery" [difficultyFilter]="state.difficultyFilter" [sortMode]="state.sortMode"
+    [selectedCount]="state.selectedCount" [allFilteredSelected]="state.allFilteredSelected"
+    [cardsCount]="state.cards.length" [pdfLoading]="state.pdfLoading" [revealYear]="state.revealYear"
+    [totalPages]="state.totalPages" [currentPage]="state.currentPage" [qrModeLabel]="state.getQrModeLabel(state.qrMode)"
+    (searchQueryChange)="state.onSearchQueryChange($event)"
+    (difficultyFilterChange)="state.onDifficultyFilterChange($event)" (sortModeChange)="state.onSortModeChange($event)"
+    (toggleSelectAllFiltered)="state.toggleSelectAllFiltered()" (exportPdf)="state.exportPdf()"
+    (printSelected)="state.printSelected()" (exportJson)="state.exportJson()" (exportCsv)="state.exportCsv()"
+    (regenerateQr)="state.regenerateQrForAllCards()" (importJson)="state.onImportJson($event)"
+    (importCsv)="state.onImportCsv($event)" (toggleSelect)="state.toggleSelect($event)"
+    (editCard)="state.editCard($event)" (duplicateCard)="state.duplicateCard($event)"
+    (deleteCard)="state.askDelete($event)" (previousPage)="state.previousPage()"
+    (nextPage)="state.nextPage()"></app-cards-section>
 </main>

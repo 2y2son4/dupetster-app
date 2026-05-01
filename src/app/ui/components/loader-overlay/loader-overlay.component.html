@@ -1,0 +1,7 @@
+<div class="loader-overlay" *ngIf="isBusy" aria-live="polite" aria-busy="true">
+  <div class="loader-card">
+    <div class="loader-spinner" aria-hidden="true"></div>
+    <p>{{ busyMessage || 'Working...' }}</p>
+    <button class="btn btn-ghost btn-small" (click)="dismiss.emit()">Dismiss Loader</button>
+  </div>
+</div>

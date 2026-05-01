@@ -1,0 +1,99 @@
+<section class="right panel">
+  <div class="toolbar">
+    <h2>Cards ({{ filteredCards.length }})</h2>
+    <div class="toolbar-controls">
+      <input type="text" placeholder="Search title or artist" [ngModel]="searchQuery"
+        (ngModelChange)="searchQueryChange.emit($event)" />
+      <select [ngModel]="difficultyFilter" (ngModelChange)="difficultyFilterChange.emit($event)">
+        <option value="">All difficulties</option>
+        <option *ngFor="let d of difficulties" [value]="d">{{ d }}</option>
+      </select>
+      <select [ngModel]="sortMode" (ngModelChange)="sortModeChange.emit($event)">
+        <option value="recent">Recent</option>
+        <option value="year">Year</option>
+        <option value="title">Title</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <button class="btn btn-ghost" [disabled]="filteredCards.length === 0" (click)="toggleSelectAllFiltered.emit()">
+      {{ allFilteredSelected ? 'Unselect All Filtered' : 'Select All Filtered' }}
+    </button>
+    <button class="btn btn-primary" [disabled]="selectedCount === 0 || pdfLoading" (click)="exportPdf.emit()">
+      <ng-container *ngIf="!pdfLoading; else loadingPdf">Export PDF</ng-container>
+    </button>
+    <ng-template #loadingPdf>Generating...</ng-template>
+
+    <button class="btn btn-primary" [disabled]="selectedCount === 0" (click)="printSelected.emit()">Print</button>
+    <button class="btn btn-ghost" (click)="exportJson.emit()">Export JSON</button>
+    <button class="btn btn-ghost" (click)="exportCsv.emit()">Export CSV</button>
+    <button class="btn btn-ghost" [disabled]="cardsCount === 0" (click)="regenerateQr.emit()">
+      Rebuild QR (Current Mode)
+    </button>
+
+    <label class="btn btn-ghost file-btn">
+      Import JSON
+      <input type="file" accept="application/json,.json" (change)="onImportJson($event)" />
+    </label>
+
+    <label class="btn btn-ghost file-btn">
+      Import CSV
+      <input type="file" accept="text/csv,.csv" (change)="onImportCsv($event)" />
+    </label>
+  </div>
+
+  <p class="hint">
+    Select cards by clicking them. Print and PDF use the selected cards in a 4x4 A4 sheet template.
+    Current QR mode: <strong>{{ qrModeLabel }}</strong>.
+  </p>
+
+  <div class="grid" *ngIf="pagedCards.length > 0; else noData">
+    <article class="card" *ngFor="let card of pagedCards; trackBy: trackById" [class.selected]="isSelected(card.id)"
+      (click)="toggleSelect.emit(card.id)">
+      <h3>{{ card.title }}</h3>
+      <div class="year">{{ revealYear ? card.year : 'YEAR' }}</div>
+      <p>{{ card.artist }}</p>
+      <div class="split"></div>
+      <div class="qr-box">
+        <img [src]="card.qrDataUrl" alt="Card QR" />
+      </div>
+      <div class="chips">
+        <span>{{ card.difficulty }}</span>
+        <span *ngIf="card.genre">{{ card.genre }}</span>
+      </div>
+      <div class="card-actions" (click)="$event.stopPropagation()">
+        <button class="btn btn-small" (click)="editCard.emit(card)">Edit</button>
+        <button class="btn btn-small" (click)="duplicateCard.emit(card)">Duplicate</button>
+        <button class="btn btn-small btn-danger" (click)="deleteCard.emit(card)">Delete</button>
+      </div>
+    </article>
+  </div>
+
+  <ng-template #noData>
+    <div class="empty">
+      <h3>No cards yet</h3>
+      <p>Create a card or import CSV/JSON.</p>
+    </div>
+  </ng-template>
+
+  <div class="pager" *ngIf="totalPages > 1">
+    <button class="btn btn-ghost" [disabled]="currentPage === 1" (click)="previousPage.emit()">Previous</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button class="btn btn-ghost" [disabled]="currentPage === totalPages" (click)="nextPage.emit()">Next</button>
+  </div>
+
+  <section class="print-sheet" aria-hidden="true">
+    <div class="sheet-page" *ngFor="let page of selectedPages">
+      <div class="sheet-card" *ngFor="let card of page">
+        <div class="sheet-title">{{ card.title }}</div>
+        <div class="sheet-year">{{ revealYear ? card.year : 'YEAR' }}</div>
+        <div class="sheet-artist">{{ card.artist }}</div>
+        <div class="sheet-separator"></div>
+        <div class="sheet-qr-box">
+          <img [src]="card.qrDataUrl" alt="Print QR" />
+        </div>
+      </div>
+    </div>
+  </section>
+</section>

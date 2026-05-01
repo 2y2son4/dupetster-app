@@ -1,0 +1,58 @@
+<article class="panel">
+  <h2>{{ editingCardId ? 'Edit Card' : 'Create Card' }}</h2>
+
+  <div class="field">
+    <label for="title">Song title *</label>
+    <input id="title" type="text" [ngModel]="form.title" (ngModelChange)="onFieldChange('title', $event)" />
+  </div>
+
+  <div class="field">
+    <label for="artist">Artist *</label>
+    <input id="artist" type="text" [ngModel]="form.artist" (ngModelChange)="onFieldChange('artist', $event)" />
+  </div>
+
+  <div class="field">
+    <label for="year">Release year *</label>
+    <input id="year" type="number" min="1900" max="2100" [ngModel]="form.year"
+      (ngModelChange)="onFieldChange('year', $event)" />
+  </div>
+
+  <div class="field">
+    <label for="spotify">Spotify URL *</label>
+    <input id="spotify" type="url" [ngModel]="form.spotifyUrl" (ngModelChange)="onFieldChange('spotifyUrl', $event)" />
+    <small class="field-help">Detected track ID: {{ detectedTrackId }}</small>
+  </div>
+
+  <div class="field">
+    <label for="qrMode">QR compatibility mode</label>
+    <select id="qrMode" [ngModel]="qrMode" (ngModelChange)="qrModeChange.emit($event)">
+      <option *ngFor="let mode of qrModes" [value]="mode.value">{{ mode.label }}</option>
+    </select>
+    <small class="field-help">Use Hitster/QRSong mode for best scanner compatibility.</small>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="album">Album</label>
+      <input id="album" type="text" [ngModel]="form.album" (ngModelChange)="onFieldChange('album', $event)" />
+    </div>
+    <div class="field">
+      <label for="genre">Genre</label>
+      <input id="genre" type="text" [ngModel]="form.genre" (ngModelChange)="onFieldChange('genre', $event)" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="difficulty">Difficulty</label>
+    <select id="difficulty" [ngModel]="form.difficulty" (ngModelChange)="onFieldChange('difficulty', $event)">
+      <option *ngFor="let d of difficulties" [value]="d">{{ d }}</option>
+    </select>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" (click)="save.emit()">
+      {{ editingCardId ? 'Update Card' : 'Add Card' }}
+    </button>
+    <button class="btn btn-ghost" (click)="clear.emit()">Clear</button>
+  </div>
+</article>
