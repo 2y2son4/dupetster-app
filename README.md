@@ -1,59 +1,127 @@
-# DupetsterApp
+# Dupetster
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.9.
+Dupetster is a music card game app inspired by Hitster. It imports Spotify playlists and generates printable QR cards for gameplay.
 
-## Development server
+Main use case: import a Spotify playlist, select cards, and print/export a 4x4 card sheet ready to cut.
 
-To start a local development server, run:
+## Run locally
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Install dependencies and start the Angular app:
 
 ```bash
-ng generate component component-name
+npm ci
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+The app runs at `http://localhost:4200/`.
+
+## How to use
+
+Typical flow:
+
+1. Import songs from Spotify playlist (recommended)
+2. Review cards in the `Cards (N)` section
+3. Use `Select All Filtered` or click individual cards
+4. Export PDF or print selected cards
+
+You can also create or edit cards manually from the form.
+
+## Spotify import modes
+
+Dupetster supports two import paths:
+
+1. Direct browser import (Client ID + Client Secret in UI)
+2. Local proxy import (recommended; credentials stay in `.env.proxy`)
+
+Start the local proxy:
 
 ```bash
-ng generate --help
+npm run start:proxy
 ```
 
-## Building
+Proxy endpoint: `http://127.0.0.1:8787/api/playlist-tracks?playlist=<url-or-id>`
 
-To build the project run:
+If proxy mode fails, check that `.env.proxy` contains your real values:
+
+```env
+SPOTIFY_CLIENT_ID=your_real_client_id
+SPOTIFY_CLIENT_SECRET=your_real_client_secret
+SPOTIFY_PROXY_PORT=8787
+```
+
+Then restart proxy:
 
 ```bash
-ng build
+npm run start:proxy
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## JSON import format example
 
-## Running unit tests
+You can import cards with `Import JSON` using an array of objects.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Minimal accepted example:
+
+```json
+[
+  {
+    "title": "Blinding Lights",
+    "artist": "The Weeknd",
+    "year": 2019,
+    "spotifyUrl": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b"
+  },
+  {
+    "title": "Billie Jean",
+    "artist": "Michael Jackson",
+    "year": 1983,
+    "spotifyUrl": "https://open.spotify.com/track/5ChkMS8OtdzJeqyybCc9R5",
+    "album": "Thriller",
+    "genre": "Pop",
+    "difficulty": "Original"
+  }
+]
+```
+
+Optional fields:
+
+- `album`
+- `genre`
+- `difficulty` (`Original`, `Pro`, `Expert`)
+- `qrMode` (`canonical-url`, `spotify-uri`, `raw-url`)
+- `spotifyTrackId`
+- `qrPayload`
+
+## Spotify Developer Dashboard settings
+
+For this project, use these settings in your Spotify app:
+
+- App name: `Dupetster`
+- Website: `https://2y2son4.github.io/dupetster-app/`
+- APIs/SDKs: `Web API` and `Android`
+
+### Redirect URIs
+
+Use:
+
+- `http://127.0.0.1:4200/callback`
+- `http://localhost:4200/callback`
+- `https://2y2son4.github.io/dupetster-app/callback`
+
+Note: for local Angular dev server, prefer `http://localhost:4200/callback` (not `https://localhost:4200/callback`).
+
+## Future Android app notes
+
+When you start Android implementation:
+
+1. Add your Android package in Spotify dashboard (for example `io.dupetster.app`).
+2. Add an app redirect URI with a custom scheme (for example `dupetster://callback`) and use the same value in Android auth config.
+3. Keep Web API selected for playlist metadata requests.
+
+## Build
 
 ```bash
-ng test
+npm run build
 ```
 
-## Running end-to-end tests
+## Deploy
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This repo includes a GitHub Actions workflow to publish to GitHub Pages on push to `master`.

@@ -48,6 +48,16 @@ interface SpotifyPlaylistTrack {
   spotifyUrl: string;
 }
 
+class SpotifyApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly details?: string,
+  ) {
+    super(message);
+  }
+}
+
 @Component({
   selector: 'app-root',
   imports: [CommonModule, FormsModule],
@@ -87,6 +97,8 @@ export class App {
   spotifyImportDifficulty: Difficulty = 'Original';
   spotifyImportLoading = false;
   proxyImportLoading = false;
+  busyCount = 0;
+  busyMessage = '';
 
   constructor() {
     void this.restoreCards();
@@ -95,6 +107,18 @@ export class App {
 
   get selectedCount(): number {
     return this.selectedCardIds.size;
+  }
+
+  get isBusy(): boolean {
+    return this.busyCount > 0;
+  }
+
+  get allFilteredSelected(): boolean {
+    if (this.filteredCards.length === 0) {
+      return false;
+    }
+
+    return this.filteredCards.every((card) => this.selectedCardIds.has(card.id));
   }
 
   get totalPages(): number {
@@ -141,41 +165,45 @@ export class App {
       this.pushToast(qrInfo.warning, 'warning');
     }
 
-    const qrDataUrl = await this.qrToDataUrl(qrInfo.payload);
-    if (!qrDataUrl) {
-      this.pushToast('Unable to generate QR from Spotify URL.', 'error');
-      return;
-    }
+    const qrPayload = qrInfo.payload;
 
-    if (this.editingCardId) {
-      const idx = this.cards.findIndex((item) => item.id === this.editingCardId);
-      if (idx !== -1) {
-        this.cards[idx] = {
-          ...this.cards[idx],
+    await this.withBusy('Generating card...', async () => {
+      const qrDataUrl = await this.qrToDataUrl(qrPayload);
+      if (!qrDataUrl) {
+        this.pushToast('Unable to generate QR from Spotify URL.', 'error');
+        return;
+      }
+
+      if (this.editingCardId) {
+        const idx = this.cards.findIndex((item) => item.id === this.editingCardId);
+        if (idx !== -1) {
+          this.cards[idx] = {
+            ...this.cards[idx],
+            ...this.formToCardPayload(),
+            spotifyTrackId: qrInfo.trackId,
+            qrPayload,
+            qrMode: this.qrMode,
+            qrDataUrl,
+          };
+        }
+        this.pushToast('Card updated.', 'success');
+      } else {
+        const card: MusicCard = {
+          id: Date.now() + Math.floor(Math.random() * 1000),
           ...this.formToCardPayload(),
           spotifyTrackId: qrInfo.trackId,
-          qrPayload: qrInfo.payload,
+          qrPayload,
           qrMode: this.qrMode,
           qrDataUrl,
         };
+        this.cards.push(card);
+        this.pushToast('Card added.', 'success');
       }
-      this.pushToast('Card updated.', 'success');
-    } else {
-      const card: MusicCard = {
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        ...this.formToCardPayload(),
-        spotifyTrackId: qrInfo.trackId,
-        qrPayload: qrInfo.payload,
-        qrMode: this.qrMode,
-        qrDataUrl,
-      };
-      this.cards.push(card);
-      this.pushToast('Card added.', 'success');
-    }
 
-    this.resetForm();
-    await this.persistCards();
-    this.applyFilters();
+      this.resetForm();
+      await this.persistCards();
+      this.applyFilters();
+    });
   }
 
   editCard(card: MusicCard): void {
@@ -243,6 +271,23 @@ export class App {
     return this.selectedCardIds.has(cardId);
   }
 
+  toggleSelectAllFiltered(): void {
+    if (this.filteredCards.length === 0) {
+      return;
+    }
+
+    if (this.allFilteredSelected) {
+      for (const card of this.filteredCards) {
+        this.selectedCardIds.delete(card.id);
+      }
+      return;
+    }
+
+    for (const card of this.filteredCards) {
+      this.selectedCardIds.add(card.id);
+    }
+  }
+
   applyFilters(): void {
     const query = this.searchQuery.trim().toLowerCase();
     let next = [...this.cards];
@@ -289,6 +334,7 @@ export class App {
     }
 
     this.pdfLoading = true;
+    this.beginBusy('Exporting PDF...');
 
     try {
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -330,6 +376,7 @@ export class App {
       this.pushToast('PDF generated with 4x4 card sheet layout.', 'success');
     } finally {
       this.pdfLoading = false;
+      this.endBusy();
     }
   }
 
@@ -348,29 +395,31 @@ export class App {
       return;
     }
 
-    let updated = 0;
-    for (const card of this.cards) {
-      const qrInfo = this.resolveQrPayload(card.spotifyUrl, this.qrMode);
-      if (!qrInfo.payload) {
-        continue;
+    await this.withBusy('Rebuilding QR cards...', async () => {
+      let updated = 0;
+      for (const card of this.cards) {
+        const qrInfo = this.resolveQrPayload(card.spotifyUrl, this.qrMode);
+        if (!qrInfo.payload) {
+          continue;
+        }
+        const qrDataUrl = await this.qrToDataUrl(qrInfo.payload);
+        if (!qrDataUrl) {
+          continue;
+        }
+        card.spotifyTrackId = qrInfo.trackId;
+        card.qrPayload = qrInfo.payload;
+        card.qrMode = this.qrMode;
+        card.qrDataUrl = qrDataUrl;
+        updated += 1;
       }
-      const qrDataUrl = await this.qrToDataUrl(qrInfo.payload);
-      if (!qrDataUrl) {
-        continue;
-      }
-      card.spotifyTrackId = qrInfo.trackId;
-      card.qrPayload = qrInfo.payload;
-      card.qrMode = this.qrMode;
-      card.qrDataUrl = qrDataUrl;
-      updated += 1;
-    }
 
-    await this.persistCards();
-    this.applyFilters();
-    this.pushToast(
-      `Regenerated ${updated} cards using ${this.getQrModeLabel(this.qrMode)}.`,
-      'success',
-    );
+      await this.persistCards();
+      this.applyFilters();
+      this.pushToast(
+        `Regenerated ${updated} cards using ${this.getQrModeLabel(this.qrMode)}.`,
+        'success',
+      );
+    });
   }
 
   async importFromSpotifyPlaylist(): Promise<void> {
@@ -402,7 +451,28 @@ export class App {
         return;
       }
       await this.importSpotifyTracksIntoCards(playlistTracks);
-    } catch {
+    } catch (error) {
+      if (error instanceof SpotifyApiError) {
+        if (error.status === 401) {
+          this.pushToast('Spotify auth failed (401). Check Client ID/Secret and retry.', 'error');
+          return;
+        }
+
+        if (error.status === 403) {
+          this.pushToast(
+            'Spotify denied access (403). Playlist may be private or app is in Development Mode without the playlist owner added as a test user.',
+            'error',
+          );
+          return;
+        }
+
+        this.pushToast(
+          `Spotify request failed (${error.status}). ${error.details ?? 'Check credentials and playlist visibility.'}`,
+          'error',
+        );
+        return;
+      }
+
       this.pushToast(
         'Playlist import failed. Verify playlist visibility and Spotify credentials.',
         'error',
@@ -444,7 +514,7 @@ export class App {
       await this.importSpotifyTracksIntoCards(tracks);
     } catch {
       this.pushToast(
-        'Local proxy import failed. Start it with "npm run start:proxy" and set SPOTIFY_CLIENT_ID/SECRET in terminal.',
+        'Local proxy import failed. Start it with "npm run start:proxy" and set SPOTIFY_CLIENT_ID/SECRET in .env.proxy (or terminal env vars).',
         'error',
       );
     } finally {
@@ -453,30 +523,36 @@ export class App {
   }
 
   async exportJson(): Promise<void> {
-    const blob = new Blob([JSON.stringify(this.cards, null, 2)], { type: 'application/json' });
-    this.downloadBlob(blob, 'music-cards.json');
-    this.pushToast('JSON exported.', 'success');
+    await this.withBusy('Exporting JSON...', async () => {
+      await this.yieldToUi();
+      const blob = new Blob([JSON.stringify(this.cards, null, 2)], { type: 'application/json' });
+      this.downloadBlob(blob, 'music-cards.json');
+      this.pushToast('JSON exported.', 'success');
+    });
   }
 
   async exportCsv(): Promise<void> {
-    const csv = Papa.unparse(
-      this.cards.map((card) => ({
-        title: card.title,
-        artist: card.artist,
-        year: card.year,
-        spotifyUrl: card.spotifyUrl,
-        spotifyTrackId: card.spotifyTrackId ?? '',
-        qrPayload: card.qrPayload,
-        qrMode: card.qrMode,
-        album: card.album,
-        genre: card.genre,
-        difficulty: card.difficulty,
-      })),
-    );
+    await this.withBusy('Exporting CSV...', async () => {
+      await this.yieldToUi();
+      const csv = Papa.unparse(
+        this.cards.map((card) => ({
+          title: card.title,
+          artist: card.artist,
+          year: card.year,
+          spotifyUrl: card.spotifyUrl,
+          spotifyTrackId: card.spotifyTrackId ?? '',
+          qrPayload: card.qrPayload,
+          qrMode: card.qrMode,
+          album: card.album,
+          genre: card.genre,
+          difficulty: card.difficulty,
+        })),
+      );
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    this.downloadBlob(blob, 'music-cards.csv');
-    this.pushToast('CSV exported.', 'success');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      this.downloadBlob(blob, 'music-cards.csv');
+      this.pushToast('CSV exported.', 'success');
+    });
   }
 
   async onImportJson(event: Event): Promise<void> {
@@ -487,13 +563,15 @@ export class App {
     }
 
     try {
-      const text = await file.text();
-      const parsed = JSON.parse(text) as Partial<MusicCard>[];
-      const imported = await this.normalizeImportedCards(parsed);
-      this.cards.push(...imported);
-      await this.persistCards();
-      this.applyFilters();
-      this.pushToast(`Imported ${imported.length} cards from JSON.`, 'success');
+      await this.withBusy('Importing JSON...', async () => {
+        const text = await file.text();
+        const parsed = JSON.parse(text) as Partial<MusicCard>[];
+        const imported = await this.normalizeImportedCards(parsed);
+        this.cards.push(...imported);
+        await this.persistCards();
+        this.applyFilters();
+        this.pushToast(`Imported ${imported.length} cards from JSON.`, 'success');
+      });
     } catch {
       this.pushToast('Unable to import JSON file.', 'error');
     } finally {
@@ -509,32 +587,34 @@ export class App {
     }
 
     try {
-      const text = await file.text();
-      const parsed = Papa.parse<Record<string, string>>(text, {
-        header: true,
-        skipEmptyLines: true,
+      await this.withBusy('Importing CSV...', async () => {
+        const text = await file.text();
+        const parsed = Papa.parse<Record<string, string>>(text, {
+          header: true,
+          skipEmptyLines: true,
+        });
+
+        const normalizedSource: Partial<MusicCard>[] = (parsed.data ?? []).map(
+          (row: Record<string, string>) => ({
+            title: row['title'] ?? '',
+            artist: row['artist'] ?? '',
+            year: Number(row['year']),
+            spotifyUrl: row['spotifyUrl'] ?? row['Spotify URL'] ?? '',
+            spotifyTrackId: row['spotifyTrackId'] ?? null,
+            qrPayload: row['qrPayload'] ?? '',
+            qrMode: (row['qrMode'] as QrPayloadMode) ?? 'canonical-url',
+            album: row['album'] ?? '',
+            genre: row['genre'] ?? '',
+            difficulty: (row['difficulty'] as Difficulty) ?? 'Original',
+          }),
+        );
+
+        const imported = await this.normalizeImportedCards(normalizedSource);
+        this.cards.push(...imported);
+        await this.persistCards();
+        this.applyFilters();
+        this.pushToast(`Imported ${imported.length} cards from CSV.`, 'success');
       });
-
-      const normalizedSource: Partial<MusicCard>[] = (parsed.data ?? []).map(
-        (row: Record<string, string>) => ({
-          title: row['title'] ?? '',
-          artist: row['artist'] ?? '',
-          year: Number(row['year']),
-          spotifyUrl: row['spotifyUrl'] ?? row['Spotify URL'] ?? '',
-          spotifyTrackId: row['spotifyTrackId'] ?? null,
-          qrPayload: row['qrPayload'] ?? '',
-          qrMode: (row['qrMode'] as QrPayloadMode) ?? 'canonical-url',
-          album: row['album'] ?? '',
-          genre: row['genre'] ?? '',
-          difficulty: (row['difficulty'] as Difficulty) ?? 'Original',
-        }),
-      );
-
-      const imported = await this.normalizeImportedCards(normalizedSource);
-      this.cards.push(...imported);
-      await this.persistCards();
-      this.applyFilters();
-      this.pushToast(`Imported ${imported.length} cards from CSV.`, 'success');
     } catch {
       this.pushToast('Unable to import CSV file.', 'error');
     } finally {
@@ -669,61 +749,103 @@ export class App {
   }
 
   private async importSpotifyTracksIntoCards(tracks: SpotifyPlaylistTrack[]): Promise<void> {
-    const existingTrackIds = new Set(
-      this.cards.map((card) => card.spotifyTrackId).filter((id): id is string => !!id),
-    );
-
-    let imported = 0;
-    let skipped = 0;
-
-    for (const track of tracks) {
-      if (!track.id || existingTrackIds.has(track.id)) {
-        skipped += 1;
-        continue;
-      }
-
-      const canonicalUrl = `https://open.spotify.com/track/${track.id}`;
-      const qrInfo = this.resolveQrPayload(canonicalUrl, this.qrMode);
-      if (!qrInfo.payload) {
-        skipped += 1;
-        continue;
-      }
-
-      const qrDataUrl = await this.qrToDataUrl(qrInfo.payload);
-      if (!qrDataUrl) {
-        skipped += 1;
-        continue;
-      }
-
-      this.cards.push({
-        id: Date.now() + Math.floor(Math.random() * 100000) + imported,
-        title: track.name,
-        artist: track.artists.join(', '),
-        year: track.year,
-        spotifyUrl: canonicalUrl,
-        album: track.album,
-        genre: '',
-        difficulty: this.spotifyImportDifficulty,
-        spotifyTrackId: track.id,
-        qrPayload: qrInfo.payload,
-        qrMode: this.qrMode,
-        qrDataUrl,
-      });
-      existingTrackIds.add(track.id);
-      imported += 1;
-    }
-
-    await this.persistCards();
-    this.applyFilters();
-
-    if (imported > 0) {
-      this.pushToast(
-        `Imported ${imported} tracks from playlist.${skipped > 0 ? ` Skipped ${skipped}.` : ''}`,
-        'success',
+    await this.withBusy('Generating cards from playlist...', async () => {
+      const existingTrackIds = new Set(
+        this.cards.map((card) => card.spotifyTrackId).filter((id): id is string => !!id),
       );
-    } else {
-      this.pushToast('No new tracks imported (likely duplicates or invalid tracks).', 'warning');
+
+      const total = tracks.length;
+      let imported = 0;
+      let skipped = 0;
+      let processed = 0;
+
+      const updateProgress = async (forceYield = false): Promise<void> => {
+        const percent = Math.round((processed / total) * 100);
+        this.busyMessage = `Imported ${processed}/${total} (${percent}%)...`;
+        if (forceYield || processed % 10 === 0) {
+          await this.yieldToUi();
+        }
+      };
+
+      await updateProgress(true);
+
+      for (const track of tracks) {
+        if (!track.id || existingTrackIds.has(track.id)) {
+          skipped += 1;
+        } else {
+          const canonicalUrl = `https://open.spotify.com/track/${track.id}`;
+          const qrInfo = this.resolveQrPayload(canonicalUrl, this.qrMode);
+          if (!qrInfo.payload) {
+            skipped += 1;
+          } else {
+            const qrDataUrl = await this.qrToDataUrl(qrInfo.payload);
+            if (!qrDataUrl) {
+              skipped += 1;
+            } else {
+              this.cards.push({
+                id: Date.now() + Math.floor(Math.random() * 100000) + imported,
+                title: track.name,
+                artist: track.artists.join(', '),
+                year: track.year,
+                spotifyUrl: canonicalUrl,
+                album: track.album,
+                genre: '',
+                difficulty: this.spotifyImportDifficulty,
+                spotifyTrackId: track.id,
+                qrPayload: qrInfo.payload,
+                qrMode: this.qrMode,
+                qrDataUrl,
+              });
+              existingTrackIds.add(track.id);
+              imported += 1;
+            }
+          }
+        }
+
+        processed += 1;
+        await updateProgress();
+      }
+
+      await updateProgress(true);
+
+      await this.persistCards();
+      this.applyFilters();
+
+      if (imported > 0) {
+        this.pushToast(
+          `Imported ${imported} tracks from playlist.${skipped > 0 ? ` Skipped ${skipped}.` : ''}`,
+          'success',
+        );
+      } else {
+        this.pushToast('No new tracks imported (likely duplicates or invalid tracks).', 'warning');
+      }
+    });
+  }
+
+  private beginBusy(message: string): void {
+    this.busyCount += 1;
+    this.busyMessage = message;
+  }
+
+  private endBusy(): void {
+    this.busyCount = Math.max(0, this.busyCount - 1);
+    if (this.busyCount === 0) {
+      this.busyMessage = '';
     }
+  }
+
+  private async withBusy<T>(message: string, task: () => Promise<T>): Promise<T> {
+    this.beginBusy(message);
+    await this.yieldToUi();
+    try {
+      return await task();
+    } finally {
+      this.endBusy();
+    }
+  }
+
+  private async yieldToUi(): Promise<void> {
+    await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
   }
 
   private normalizeQrMode(value: unknown): QrPayloadMode {
@@ -809,7 +931,13 @@ export class App {
     });
 
     if (!response.ok) {
-      return null;
+      let details = '';
+      try {
+        details = await response.text();
+      } catch {
+        details = '';
+      }
+      throw new SpotifyApiError('spotify-token-fetch-failed', response.status, details);
     }
 
     const json = (await response.json()) as { access_token?: string };
@@ -831,7 +959,13 @@ export class App {
       });
 
       if (!response.ok) {
-        throw new Error('spotify-playlist-fetch-failed');
+        let details = '';
+        try {
+          details = await response.text();
+        } catch {
+          details = '';
+        }
+        throw new SpotifyApiError('spotify-playlist-fetch-failed', response.status, details);
       }
 
       const json = (await response.json()) as {
@@ -1018,31 +1152,42 @@ export class App {
     h: number,
     qrSize: number,
   ): void {
-    pdf.setFillColor(237, 237, 237);
+    const safeInset = 2.2;
+
+    pdf.setFillColor(242, 242, 242);
     pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.3);
     pdf.rect(x, y, w, h, 'FD');
+    pdf.setLineWidth(0.2);
+    pdf.rect(x + safeInset, y + safeInset, w - safeInset * 2, h - safeInset * 2, 'S');
 
     const centerX = x + w / 2;
-    const tY = y + 12;
+    const tY = y + safeInset + 9.5;
 
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(11);
-    pdf.text(card.title, centerX, tY, { align: 'center', maxWidth: w - 6 });
+    pdf.text(card.title, centerX, tY, {
+      align: 'center',
+      maxWidth: w - safeInset * 2 - 4,
+    });
 
     pdf.setFontSize(13);
     pdf.text(this.revealYear ? String(card.year) : 'YEAR', centerX, tY + 8, { align: 'center' });
 
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(10);
-    pdf.text(card.artist, centerX, tY + 16, { align: 'center', maxWidth: w - 6 });
+    pdf.text(card.artist, centerX, tY + 16, {
+      align: 'center',
+      maxWidth: w - safeInset * 2 - 4,
+    });
 
-    const splitY = y + h * 0.5;
+    const splitY = y + h * 0.5 + 1;
     pdf.setLineDashPattern([1, 1], 0);
-    pdf.line(x + 2, splitY, x + w - 2, splitY);
+    pdf.line(x + safeInset + 1, splitY, x + w - safeInset - 1, splitY);
 
     const qrX = centerX - qrSize / 2;
-    const qrY = splitY + 4;
+    const qrY = splitY + 4.5;
     pdf.rect(qrX, qrY, qrSize, qrSize, 'S');
     pdf.setLineDashPattern([], 0);
 
