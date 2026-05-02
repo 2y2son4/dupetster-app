@@ -33,8 +33,7 @@
       [qrModes]="state.qrModes" [qrMode]="state.qrMode"
       [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)"
       [spotifyAutofillLoading]="state.spotifyAutofillLoading()" (formChange)="state.onFormChange($event)"
-      (qrModeChange)="state.qrMode = $event" (save)="state.saveOrUpdateCard()"
-      (clear)="state.resetForm()" />
+      (qrModeChange)="state.qrMode = $event" (save)="state.saveOrUpdateCard()" (clear)="state.resetForm()" />
 
     <app-live-preview-panel [form]="state.form" [revealYear]="state.revealYear" [previewQr]="state.previewQr()"
       (revealYearChange)="state.onRevealYearChange($event)" />
@@ -49,12 +48,11 @@
     (searchQueryChange)="state.onSearchQueryChange($event)"
     (difficultyFilterChange)="state.onDifficultyFilterChange($event)" (sortModeChange)="state.onSortModeChange($event)"
     (toggleSelectAllFiltered)="state.toggleSelectAllFiltered()" (deleteSelected)="state.deleteSelectedCards()"
-    (exportPdf)="state.exportPdf()"
-    (exportJson)="state.exportJson()" (exportCsv)="state.exportCsv()" (regenerateQr)="state.regenerateQrForAllCards()"
-    (importJson)="state.onImportJson($event)" (importCsv)="state.onImportCsv($event)"
-    (toggleSelect)="state.toggleSelect($event)" (editCard)="state.editCard($event)"
-    (duplicateCard)="state.duplicateCard($event)" (deleteCard)="state.askDelete($event)"
-    (previousPage)="state.previousPage()" (nextPage)="state.nextPage()" />
+    (exportPdf)="state.exportPdf()" (exportJson)="state.exportJson()" (exportCsv)="state.exportCsv()"
+    (regenerateQr)="state.regenerateQrForAllCards()" (importJson)="state.onImportJson($event)"
+    (importCsv)="state.onImportCsv($event)" (toggleSelect)="state.toggleSelect($event)"
+    (editCard)="state.editCard($event)" (duplicateCard)="state.duplicateCard($event)"
+    (deleteCard)="state.askDelete($event)" (previousPage)="state.previousPage()" (nextPage)="state.nextPage()" />
 </main>
 <footer class="page-footer">
   <p>
