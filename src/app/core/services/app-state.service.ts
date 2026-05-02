@@ -474,7 +474,10 @@ export class AppStateService {
     } catch (error) {
       if (error instanceof SpotifyApiError) {
         if (error.status === 401) {
-          this.#pushToast('Spotify auth failed (401). Reconnect Spotify and retry import.', 'error');
+          this.#pushToast(
+            'Spotify auth failed (401). Reconnect Spotify and retry import.',
+            'error',
+          );
           return;
         }
 
@@ -1058,10 +1061,7 @@ export class AppStateService {
     }
   }
 
-  async #withLoadingFlag<T>(
-    setter: (value: boolean) => void,
-    task: () => Promise<T>,
-  ): Promise<T> {
+  async #withLoadingFlag<T>(setter: (value: boolean) => void, task: () => Promise<T>): Promise<T> {
     setter(true);
     try {
       return await task();
@@ -1334,9 +1334,7 @@ export class AppStateService {
     );
   }
 
-  async #refreshSpotifyAccessToken(
-    session: SpotifyAuthSession,
-  ): Promise<SpotifyAuthSession> {
+  async #refreshSpotifyAccessToken(session: SpotifyAuthSession): Promise<SpotifyAuthSession> {
     return this.spotifyApiService.refreshSpotifyAccessToken(session, this.spotifyRequestTimeoutMs);
   }
 
