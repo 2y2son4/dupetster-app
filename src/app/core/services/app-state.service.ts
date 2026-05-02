@@ -43,7 +43,7 @@ export class AppStateService {
   selectedCardIds = new Set<number>();
   toasts: ToastMessage[] = [];
 
-  form: CardDraft = this.emptyDraft();
+  form: CardDraft = this.#emptyDraft();
   editingCardId: number | null = null;
   cardPendingDelete: MusicCard | null = null;
 
@@ -63,9 +63,9 @@ export class AppStateService {
   spotifyTrackListImportLoading = signal(false);
   proxyImportLoading = signal(false);
   spotifyAutofillLoading = signal(false);
-  private readonly busyCount = signal(0);
+  #busyCount = signal(0);
   busyMessage = signal('');
-  isBusy = computed(() => this.busyCount() > 0);
+  isBusy = computed(() => this.#busyCount() > 0);
   busyWatchdogHandle: number | null = null;
   busyStartedAt: number | null = null;
   toastTimerHandles = new Map<number, number>();
@@ -81,10 +81,10 @@ export class AppStateService {
     private readonly qrCodeService: QrCodeService,
     private readonly pdfExportService: PdfExportService,
   ) {
-    void this.restoreCards();
-    this.restoreSpotifyImportSettings();
-    this.restoreSpotifyAuthSession();
-    void this.completeSpotifyAuthFromRedirect();
+    void this.#restoreCards();
+    this.#restoreSpotifyImportSettings();
+    this.#restoreSpotifyAuthSession();
+    void this.#completeSpotifyAuthFromRedirect();
 
     window.setInterval(() => {
       if (!this.isBusy() || this.busyStartedAt === null) {
@@ -93,7 +93,7 @@ export class AppStateService {
 
       const elapsed = Date.now() - this.busyStartedAt;
       if (elapsed > this.busyHardLimitMs) {
-        this.forceResetBusy('Operation exceeded time limit and was reset.');
+        this.#forceResetBusy('Operation exceeded time limit and was reset.');
       }
     }, 2000);
   }
@@ -128,13 +128,13 @@ export class AppStateService {
   }
 
   async saveOrUpdateCard(): Promise<void> {
-    if (!this.validateForm()) {
+    if (!this.#validateForm()) {
       return;
     }
 
-    const qrInfo = this.resolveQrPayload(this.form.spotifyUrl, this.qrMode);
+    const qrInfo = this.#resolveQrPayload(this.form.spotifyUrl, this.qrMode);
     if (!qrInfo.payload) {
-      this.pushToast(
+      this.#pushToast(
         'Could not parse a Spotify track ID. Use a track URL or spotify:track URI.',
         'error',
       );
@@ -142,15 +142,15 @@ export class AppStateService {
     }
 
     if (qrInfo.warning) {
-      this.pushToast(qrInfo.warning, 'warning');
+      this.#pushToast(qrInfo.warning, 'warning');
     }
 
     const qrPayload = qrInfo.payload;
 
-    await this.withBusy('Generating card...', async () => {
-      const qrDataUrl = await this.qrToDataUrl(qrPayload);
+    await this.#withBusy('Generating card...', async () => {
+      const qrDataUrl = await this.#qrToDataUrl(qrPayload);
       if (!qrDataUrl) {
-        this.pushToast('Unable to generate QR from Spotify URL.', 'error');
+        this.#pushToast('Unable to generate QR from Spotify URL.', 'error');
         return;
       }
 
@@ -159,29 +159,29 @@ export class AppStateService {
         if (idx !== -1) {
           this.cards[idx] = {
             ...this.cards[idx],
-            ...this.formToCardPayload(),
+            ...this.#formToCardPayload(),
             spotifyTrackId: qrInfo.trackId,
             qrPayload,
             qrMode: this.qrMode,
             qrDataUrl,
           };
         }
-        this.pushToast('Card updated.', 'success');
+        this.#pushToast('Card updated.', 'success');
       } else {
         const card: MusicCard = {
           id: Date.now() + Math.floor(Math.random() * 1000),
-          ...this.formToCardPayload(),
+          ...this.#formToCardPayload(),
           spotifyTrackId: qrInfo.trackId,
           qrPayload,
           qrMode: this.qrMode,
           qrDataUrl,
         };
         this.cards.push(card);
-        this.pushToast('Card added.', 'success');
+        this.#pushToast('Card added.', 'success');
       }
 
       this.resetForm();
-      await this.persistCards();
+      await this.#persistCards();
       this.applyFilters();
     });
   }
@@ -207,9 +207,9 @@ export class AppStateService {
       id: Date.now() + Math.floor(Math.random() * 1000),
     };
     this.cards.push(copy);
-    void this.persistCards();
+    void this.#persistCards();
     this.applyFilters();
-    this.pushToast('Card duplicated.', 'success');
+    this.#pushToast('Card duplicated.', 'success');
   }
 
   askDelete(card: MusicCard): void {
@@ -229,13 +229,13 @@ export class AppStateService {
     this.cards = this.cards.filter((card) => card.id !== id);
     this.selectedCardIds.delete(id);
     this.cardPendingDelete = null;
-    void this.persistCards();
+    void this.#persistCards();
     this.applyFilters();
-    this.pushToast('Card deleted.', 'success');
+    this.#pushToast('Card deleted.', 'success');
   }
 
   resetForm(): void {
-    this.form = this.emptyDraft();
+    this.form = this.#emptyDraft();
     this.editingCardId = null;
     this.#spotifyAutofilledTrackId = null;
     this.spotifyAutofillLoading.set(false);
@@ -340,16 +340,16 @@ export class AppStateService {
   async exportPdf(): Promise<void> {
     const selected = this.selectedCards;
     if (selected.length === 0) {
-      this.pushToast('Select at least one card for PDF export.', 'error');
+      this.#pushToast('Select at least one card for PDF export.', 'error');
       return;
     }
 
-    await this.withLoadingFlag(
-      (value) => this.setPdfLoading(value),
+    await this.#withLoadingFlag(
+      (value) => this.#setPdfLoading(value),
       async () => {
-        await this.withBusy('Exporting PDF...', async () => {
+        await this.#withBusy('Exporting PDF...', async () => {
           this.pdfExportService.exportCardsSheetPdf(selected, this.revealYear);
-          this.pushToast('PDF generated with 4x4 card sheet layout.', 'success');
+          this.#pushToast('PDF generated with 4x4 card sheet layout.', 'success');
         });
       },
     );
@@ -357,18 +357,18 @@ export class AppStateService {
 
   async regenerateQrForAllCards(): Promise<void> {
     if (this.cards.length === 0) {
-      this.pushToast('No cards available to regenerate.', 'warning');
+      this.#pushToast('No cards available to regenerate.', 'warning');
       return;
     }
 
-    await this.withBusy('Rebuilding QR cards...', async () => {
+    await this.#withBusy('Rebuilding QR cards...', async () => {
       let updated = 0;
       for (const card of this.cards) {
-        const qrInfo = this.resolveQrPayload(card.spotifyUrl, this.qrMode);
+        const qrInfo = this.#resolveQrPayload(card.spotifyUrl, this.qrMode);
         if (!qrInfo.payload) {
           continue;
         }
-        const qrDataUrl = await this.qrToDataUrl(qrInfo.payload);
+        const qrDataUrl = await this.#qrToDataUrl(qrInfo.payload);
         if (!qrDataUrl) {
           continue;
         }
@@ -379,9 +379,9 @@ export class AppStateService {
         updated += 1;
       }
 
-      await this.persistCards();
+      await this.#persistCards();
       this.applyFilters();
-      this.pushToast(
+      this.#pushToast(
         `Regenerated ${updated} cards using ${this.getQrModeLabel(this.qrMode)}.`,
         'success',
       );
@@ -391,14 +391,14 @@ export class AppStateService {
   async connectSpotifyAccount(): Promise<void> {
     const clientId = this.spotifyClientId.trim();
     if (!clientId) {
-      this.pushToast('Provide Spotify Client ID before connecting your account.', 'error');
+      this.#pushToast('Provide Spotify Client ID before connecting your account.', 'error');
       return;
     }
 
-    const redirectUri = this.resolveSpotifyRedirectUri();
-    const verifier = this.randomUrlSafeString(64);
-    const state = this.randomUrlSafeString(24);
-    const challenge = await this.createCodeChallenge(verifier);
+    const redirectUri = this.#resolveSpotifyRedirectUri();
+    const verifier = this.#randomUrlSafeString(64);
+    const state = this.#randomUrlSafeString(24);
+    const challenge = await this.#createCodeChallenge(verifier);
 
     const pkceState: SpotifyPkceState = {
       clientId,
@@ -419,7 +419,7 @@ export class AppStateService {
     authorizeUrl.searchParams.set('scope', this.spotifyOAuthScope);
     authorizeUrl.searchParams.set('show_dialog', 'true');
 
-    this.persistSpotifyImportSettings();
+    this.#persistSpotifyImportSettings();
     window.location.href = authorizeUrl.toString();
   }
 
@@ -428,170 +428,170 @@ export class AppStateService {
     localStorage.removeItem(this.spotifyAuthKey);
     sessionStorage.removeItem(this.spotifyPkceKey);
     if (showToast) {
-      this.pushToast('Spotify account disconnected.', 'info');
+      this.#pushToast('Spotify account disconnected.', 'info');
     }
   }
 
   async importFromSpotifyPlaylist(): Promise<void> {
-    const playlistId = this.extractSpotifyPlaylistId(this.spotifyPlaylistInput);
+    const playlistId = this.#extractSpotifyPlaylistId(this.spotifyPlaylistInput);
 
     if (!playlistId) {
-      this.pushToast('Provide a valid Spotify playlist URL/ID.', 'error');
+      this.#pushToast('Provide a valid Spotify playlist URL/ID.', 'error');
       return;
     }
 
-    this.setSpotifyImportLoading(true);
-    this.persistSpotifyImportSettings();
+    this.#setSpotifyImportLoading(true);
+    this.#persistSpotifyImportSettings();
 
     try {
       if (this.spotifyConnected) {
-        const playlistTracks = await this.fetchSpotifyPlaylistTracksWithUserSession(playlistId);
+        const playlistTracks = await this.#fetchSpotifyPlaylistTracksWithUserSession(playlistId);
         if (playlistTracks.length === 0) {
-          this.pushToast('No track items found in this playlist.', 'warning');
+          this.#pushToast('No track items found in this playlist.', 'warning');
           return;
         }
-        await this.importSpotifyTracksIntoCards(playlistTracks);
+        await this.#importSpotifyTracksIntoCards(playlistTracks);
         return;
       }
 
       const clientId = this.spotifyClientId.trim();
       const clientSecret = this.spotifyClientSecret.trim();
       if (!clientId || !clientSecret) {
-        this.pushToast(
+        this.#pushToast(
           'Connect Spotify account first, or provide Client ID + Client Secret for legacy import.',
           'error',
         );
         return;
       }
 
-      const accessToken = await this.fetchSpotifyClientCredentialsToken(clientId, clientSecret);
-      const playlistTracks = await this.fetchSpotifyPlaylistTracks(playlistId, accessToken);
+      const accessToken = await this.#fetchSpotifyClientCredentialsToken(clientId, clientSecret);
+      const playlistTracks = await this.#fetchSpotifyPlaylistTracks(playlistId, accessToken);
       if (playlistTracks.length === 0) {
-        this.pushToast('No track items found in this playlist.', 'warning');
+        this.#pushToast('No track items found in this playlist.', 'warning');
         return;
       }
-      await this.importSpotifyTracksIntoCards(playlistTracks);
+      await this.#importSpotifyTracksIntoCards(playlistTracks);
     } catch (error) {
       if (error instanceof SpotifyApiError) {
         if (error.status === 401) {
-          this.pushToast('Spotify auth failed (401). Reconnect Spotify and retry import.', 'error');
+          this.#pushToast('Spotify auth failed (401). Reconnect Spotify and retry import.', 'error');
           return;
         }
 
         if (error.status === 403) {
           if (this.spotifyConnected) {
-            const reason = this.extractSpotifyErrorReason(error.details);
-            const guidance = this.buildSpotifyForbiddenGuidance(reason);
+            const reason = this.#extractSpotifyErrorReason(error.details);
+            const guidance = this.#buildSpotifyForbiddenGuidance(reason);
             this.disconnectSpotifyAccount(false);
-            this.showToast(
+            this.#showToast(
               `Spotify denied access for the connected session (403${reason ? `: ${reason}` : ''}). ${guidance}`,
               'error',
             );
             return;
           }
 
-          this.showToast(
+          this.#showToast(
             'Spotify denied playlist access (403) for this app/token type. This often happens with Client Credentials; use OAuth user login flow for playlist import.',
             'error',
           );
           return;
         }
 
-        this.showToast(
+        this.#showToast(
           `Spotify request failed (${error.status}). ${error.details ?? 'Check credentials and playlist visibility.'}`,
           'error',
         );
         return;
       }
 
-      this.showToast(
+      this.#showToast(
         'Playlist import failed. Verify playlist visibility and Spotify credentials.',
         'error',
       );
     } finally {
-      this.setSpotifyImportLoading(false);
+      this.#setSpotifyImportLoading(false);
     }
   }
 
   async importFromSpotifyTrackList(): Promise<void> {
-    const parsed = this.parseSpotifyTrackListInput(this.spotifyTrackListInput);
+    const parsed = this.#parseSpotifyTrackListInput(this.spotifyTrackListInput);
 
     if (parsed.trackIds.length === 0) {
-      this.showToast('Paste at least one Spotify track URL, URI, or ID.', 'error');
+      this.#showToast('Paste at least one Spotify track URL, URI, or ID.', 'error');
       return;
     }
 
-    this.setSpotifyTrackListImportLoading(true);
-    this.persistSpotifyImportSettings();
+    this.#setSpotifyTrackListImportLoading(true);
+    this.#persistSpotifyImportSettings();
 
     try {
-      const accessToken = await this.getSpotifyTrackLookupAccessToken();
-      const tracks = await this.fetchSpotifyTracksByIds(parsed.trackIds, accessToken);
+      const accessToken = await this.#getSpotifyTrackLookupAccessToken();
+      const tracks = await this.#fetchSpotifyTracksByIds(parsed.trackIds, accessToken);
 
       if (tracks.length === 0) {
-        this.showToast('No valid Spotify tracks were resolved from the pasted list.', 'warning');
+        this.#showToast('No valid Spotify tracks were resolved from the pasted list.', 'warning');
         return;
       }
 
-      await this.importSpotifyTracksIntoCards(tracks);
+      await this.#importSpotifyTracksIntoCards(tracks);
 
       if (parsed.invalidEntries > 0) {
-        this.showToast(`Skipped ${parsed.invalidEntries} invalid pasted entries.`, 'warning');
+        this.#showToast(`Skipped ${parsed.invalidEntries} invalid pasted entries.`, 'warning');
       }
 
       const missingCount = parsed.trackIds.length - tracks.length;
       if (missingCount > 0) {
-        this.showToast(`Skipped ${missingCount} tracks that Spotify did not return.`, 'warning');
+        this.#showToast(`Skipped ${missingCount} tracks that Spotify did not return.`, 'warning');
       }
     } catch (error) {
       if (error instanceof SpotifyApiError) {
         if (error.status === 401) {
-          this.showToast(
+          this.#showToast(
             'Track lookup needs a valid Spotify session or Client ID + Client Secret.',
             'error',
           );
           return;
         }
 
-        this.showToast(
+        this.#showToast(
           `Spotify track lookup failed (${error.status}). ${error.details ?? 'Check your credentials and pasted URLs.'}`,
           'error',
         );
         return;
       }
 
-      this.showToast('Track list import failed. Check the pasted URLs and retry.', 'error');
+      this.#showToast('Track list import failed. Check the pasted URLs and retry.', 'error');
     } finally {
-      this.setSpotifyTrackListImportLoading(false);
+      this.#setSpotifyTrackListImportLoading(false);
     }
   }
 
-  private async fetchSpotifyPlaylistTracksWithUserSession(
+  async #fetchSpotifyPlaylistTracksWithUserSession(
     playlistId: string,
   ): Promise<SpotifyPlaylistTrack[]> {
-    const userToken = await this.getSpotifyUserAccessToken();
+    const userToken = await this.#getSpotifyUserAccessToken();
     if (!userToken) {
       throw new SpotifyApiError('spotify-user-session-missing', 401);
     }
 
     try {
-      return await this.fetchSpotifyPlaylistTracks(playlistId, userToken);
+      return await this.#fetchSpotifyPlaylistTracks(playlistId, userToken);
     } catch (error) {
       if (
         error instanceof SpotifyApiError &&
         error.status === 401 &&
         this.spotifyAuthSession?.refreshToken
       ) {
-        this.spotifyAuthSession = await this.refreshSpotifyAccessToken(this.spotifyAuthSession);
-        this.persistSpotifyAuthSession();
-        return this.fetchSpotifyPlaylistTracks(playlistId, this.spotifyAuthSession.accessToken);
+        this.spotifyAuthSession = await this.#refreshSpotifyAccessToken(this.spotifyAuthSession);
+        this.#persistSpotifyAuthSession();
+        return this.#fetchSpotifyPlaylistTracks(playlistId, this.spotifyAuthSession.accessToken);
       }
 
       throw error;
     }
   }
 
-  private extractSpotifyErrorReason(details?: string): string {
+  #extractSpotifyErrorReason(details?: string): string {
     if (!details) {
       return '';
     }
@@ -608,7 +608,7 @@ export class AppStateService {
     }
   }
 
-  private buildSpotifyForbiddenGuidance(reason: string): string {
+  #buildSpotifyForbiddenGuidance(reason: string): string {
     const normalized = reason.toLowerCase();
 
     if (normalized.includes('insufficient client scope')) {
@@ -630,7 +630,7 @@ export class AppStateService {
     return 'Reconnect Spotify again and retry import.';
   }
 
-  private parseSpotifyTrackListInput(input: string): {
+  #parseSpotifyTrackListInput(input: string): {
     trackIds: string[];
     invalidEntries: number;
   } {
@@ -645,7 +645,7 @@ export class AppStateService {
 
     for (const entry of entries) {
       const directIdMatch = entry.match(/^[a-zA-Z0-9]{22}$/)?.[0] ?? null;
-      const trackId = directIdMatch ?? this.extractSpotifyTrackId(entry);
+      const trackId = directIdMatch ?? this.#extractSpotifyTrackId(entry);
 
       if (!trackId) {
         invalidEntries += 1;
@@ -661,15 +661,15 @@ export class AppStateService {
     return { trackIds, invalidEntries };
   }
 
-  private async getSpotifyTrackLookupAccessToken(): Promise<string> {
+  async #getSpotifyTrackLookupAccessToken(): Promise<string> {
     const clientId = this.spotifyClientId.trim();
     const clientSecret = this.spotifyClientSecret.trim();
 
     if (clientId && clientSecret) {
-      return this.fetchSpotifyClientCredentialsToken(clientId, clientSecret);
+      return this.#fetchSpotifyClientCredentialsToken(clientId, clientSecret);
     }
 
-    const userToken = await this.getSpotifyUserAccessToken();
+    const userToken = await this.#getSpotifyUserAccessToken();
     if (userToken) {
       return userToken;
     }
@@ -678,14 +678,14 @@ export class AppStateService {
   }
 
   async importFromPlaylistViaProxy(): Promise<void> {
-    const playlistId = this.extractSpotifyPlaylistId(this.spotifyPlaylistInput);
+    const playlistId = this.#extractSpotifyPlaylistId(this.spotifyPlaylistInput);
     if (!playlistId) {
-      this.pushToast('Provide a valid Spotify playlist URL or ID.', 'error');
+      this.#pushToast('Provide a valid Spotify playlist URL or ID.', 'error');
       return;
     }
 
-    this.setProxyImportLoading(true);
-    this.persistSpotifyImportSettings();
+    this.#setProxyImportLoading(true);
+    this.#persistSpotifyImportSettings();
 
     try {
       const response = await fetch(
@@ -707,40 +707,40 @@ export class AppStateService {
 
       const tracks = payload.tracks ?? [];
       if (tracks.length === 0) {
-        this.pushToast('Proxy returned no tracks for this playlist.', 'warning');
+        this.#pushToast('Proxy returned no tracks for this playlist.', 'warning');
         return;
       }
 
-      await this.importSpotifyTracksIntoCards(tracks);
+      await this.#importSpotifyTracksIntoCards(tracks);
     } catch (error) {
       if (error instanceof Error && error.message === 'proxy-spotify-forbidden') {
-        this.pushToast(
+        this.#pushToast(
           'Spotify denied playlist access (403) for Client Credentials. Proxy is working, but playlist import needs OAuth user login flow.',
           'error',
         );
         return;
       }
 
-      this.pushToast(
+      this.#pushToast(
         'Local proxy import failed. Start it with "npm run start:proxy" and set SPOTIFY_CLIENT_ID/SECRET in .env.proxy (or terminal env vars).',
         'error',
       );
     } finally {
-      this.setProxyImportLoading(false);
+      this.#setProxyImportLoading(false);
     }
   }
 
   async exportJson(): Promise<void> {
-    await this.withBusy('Exporting JSON...', async () => {
-      await this.yieldToUi();
+    await this.#withBusy('Exporting JSON...', async () => {
+      await this.#yieldToUi();
       this.pdfExportService.downloadJson(this.cards, 'music-cards.json');
-      this.pushToast('JSON exported.', 'success');
+      this.#pushToast('JSON exported.', 'success');
     });
   }
 
   async exportCsv(): Promise<void> {
-    await this.withBusy('Exporting CSV...', async () => {
-      await this.yieldToUi();
+    await this.#withBusy('Exporting CSV...', async () => {
+      await this.#yieldToUi();
       this.pdfExportService.downloadCsv(
         this.cards.map((card) => ({
           title: card.title,
@@ -756,7 +756,7 @@ export class AppStateService {
         })),
         'music-cards.csv',
       );
-      this.pushToast('CSV exported.', 'success');
+      this.#pushToast('CSV exported.', 'success');
     });
   }
 
@@ -768,17 +768,17 @@ export class AppStateService {
     }
 
     try {
-      await this.withBusy('Importing JSON...', async () => {
+      await this.#withBusy('Importing JSON...', async () => {
         const text = await file.text();
         const parsed = JSON.parse(text) as Partial<MusicCard>[];
-        const imported = await this.normalizeImportedCards(parsed);
+        const imported = await this.#normalizeImportedCards(parsed);
         this.cards.push(...imported);
-        await this.persistCards();
+        await this.#persistCards();
         this.applyFilters();
-        this.pushToast(`Imported ${imported.length} cards from JSON.`, 'success');
+        this.#pushToast(`Imported ${imported.length} cards from JSON.`, 'success');
       });
     } catch {
-      this.pushToast('Unable to import JSON file.', 'error');
+      this.#pushToast('Unable to import JSON file.', 'error');
     } finally {
       input.value = '';
     }
@@ -792,7 +792,7 @@ export class AppStateService {
     }
 
     try {
-      await this.withBusy('Importing CSV...', async () => {
+      await this.#withBusy('Importing CSV...', async () => {
         const text = await file.text();
         const parsed = Papa.parse<Record<string, string>>(text, {
           header: true,
@@ -814,14 +814,14 @@ export class AppStateService {
           }),
         );
 
-        const imported = await this.normalizeImportedCards(normalizedSource);
+        const imported = await this.#normalizeImportedCards(normalizedSource);
         this.cards.push(...imported);
-        await this.persistCards();
+        await this.#persistCards();
         this.applyFilters();
-        this.pushToast(`Imported ${imported.length} cards from CSV.`, 'success');
+        this.#pushToast(`Imported ${imported.length} cards from CSV.`, 'success');
       });
     } catch {
-      this.pushToast('Unable to import CSV file.', 'error');
+      this.#pushToast('Unable to import CSV file.', 'error');
     } finally {
       input.value = '';
     }
@@ -846,10 +846,10 @@ export class AppStateService {
   }
 
   getDetectedTrackId(spotifyUrl: string): string {
-    return this.extractSpotifyTrackId(spotifyUrl) ?? 'Not detected';
+    return this.#extractSpotifyTrackId(spotifyUrl) ?? 'Not detected';
   }
 
-  private emptyDraft(): CardDraft {
+  #emptyDraft(): CardDraft {
     return {
       title: '',
       artist: '',
@@ -861,7 +861,7 @@ export class AppStateService {
     };
   }
 
-  private formToCardPayload(): {
+  #formToCardPayload(): {
     title: string;
     artist: string;
     year: number;
@@ -881,26 +881,26 @@ export class AppStateService {
     };
   }
 
-  private validateForm(): boolean {
+  #validateForm(): boolean {
     if (
       !this.form.title.trim() ||
       !this.form.artist.trim() ||
       !this.form.spotifyUrl.trim() ||
       !this.form.year
     ) {
-      this.pushToast('Please fill all required fields.', 'error');
+      this.#pushToast('Please fill all required fields.', 'error');
       return false;
     }
 
     if (Number(this.form.year) < 1900 || Number(this.form.year) > 2100) {
-      this.pushToast('Release year must be between 1900 and 2100.', 'error');
+      this.#pushToast('Release year must be between 1900 and 2100.', 'error');
       return false;
     }
 
     return true;
   }
 
-  private async normalizeImportedCards(source: Partial<MusicCard>[]): Promise<MusicCard[]> {
+  async #normalizeImportedCards(source: Partial<MusicCard>[]): Promise<MusicCard[]> {
     const result: MusicCard[] = [];
 
     for (const row of source) {
@@ -908,22 +908,22 @@ export class AppStateService {
         continue;
       }
 
-      const importedMode = this.normalizeQrMode(row.qrMode);
+      const importedMode = this.#normalizeQrMode(row.qrMode);
       const qrInfo = row.qrPayload
         ? {
             payload: String(row.qrPayload),
             trackId:
               row.spotifyTrackId && String(row.spotifyTrackId).trim()
                 ? String(row.spotifyTrackId)
-                : this.extractSpotifyTrackId(String(row.spotifyUrl)),
+                : this.#extractSpotifyTrackId(String(row.spotifyUrl)),
           }
-        : this.resolveQrPayload(String(row.spotifyUrl), importedMode);
+        : this.#resolveQrPayload(String(row.spotifyUrl), importedMode);
 
       if (!qrInfo.payload) {
         continue;
       }
 
-      const qrDataUrl = await this.qrToDataUrl(qrInfo.payload);
+      const qrDataUrl = await this.#qrToDataUrl(qrInfo.payload);
       if (!qrDataUrl) {
         continue;
       }
@@ -938,7 +938,7 @@ export class AppStateService {
         qrMode: importedMode,
         album: String(row.album ?? ''),
         genre: String(row.genre ?? ''),
-        difficulty: this.normalizeDifficulty(row.difficulty),
+        difficulty: this.#normalizeDifficulty(row.difficulty),
         qrDataUrl,
       });
     }
@@ -946,15 +946,15 @@ export class AppStateService {
     return result;
   }
 
-  private normalizeDifficulty(value: unknown): Difficulty {
+  #normalizeDifficulty(value: unknown): Difficulty {
     if (value === 'Pro' || value === 'Expert') {
       return value;
     }
     return 'Original';
   }
 
-  private async importSpotifyTracksIntoCards(tracks: SpotifyPlaylistTrack[]): Promise<void> {
-    await this.withBusy('Generating cards from playlist...', async () => {
+  async #importSpotifyTracksIntoCards(tracks: SpotifyPlaylistTrack[]): Promise<void> {
+    await this.#withBusy('Generating cards from playlist...', async () => {
       const existingTrackIds = new Set(
         this.cards.map((card) => card.spotifyTrackId).filter((id): id is string => !!id),
       );
@@ -968,7 +968,7 @@ export class AppStateService {
         const percent = Math.round((processed / total) * 100);
         this.busyMessage.set(`Imported ${processed}/${total} (${percent}%)...`);
         if (forceYield || processed % 10 === 0) {
-          await this.yieldToUi();
+          await this.#yieldToUi();
         }
       };
 
@@ -979,11 +979,11 @@ export class AppStateService {
           skipped += 1;
         } else {
           const canonicalUrl = `https://open.spotify.com/track/${track.id}`;
-          const qrInfo = this.resolveQrPayload(canonicalUrl, this.qrMode);
+          const qrInfo = this.#resolveQrPayload(canonicalUrl, this.qrMode);
           if (!qrInfo.payload) {
             skipped += 1;
           } else {
-            const qrDataUrl = await this.qrToDataUrl(qrInfo.payload);
+            const qrDataUrl = await this.#qrToDataUrl(qrInfo.payload);
             if (!qrDataUrl) {
               skipped += 1;
             } else {
@@ -1013,52 +1013,52 @@ export class AppStateService {
 
       await updateProgress(true);
 
-      await this.persistCards();
+      await this.#persistCards();
       this.applyFilters();
 
       if (imported > 0) {
-        this.pushToast(
+        this.#pushToast(
           `Imported ${imported} tracks from playlist.${skipped > 0 ? ` Skipped ${skipped}.` : ''}`,
           'success',
         );
       } else {
-        this.pushToast('No new tracks imported (likely duplicates or invalid tracks).', 'warning');
+        this.#pushToast('No new tracks imported (likely duplicates or invalid tracks).', 'warning');
       }
     });
   }
 
-  private beginBusy(message: string): void {
-    if (this.busyCount() === 0) {
+  #beginBusy(message: string): void {
+    if (this.#busyCount() === 0) {
       this.busyStartedAt = Date.now();
     }
-    this.busyCount.update((value) => value + 1);
+    this.#busyCount.update((value) => value + 1);
     this.busyMessage.set(message);
-    this.refreshBusyWatchdog();
+    this.#refreshBusyWatchdog();
   }
 
-  private endBusy(): void {
-    this.busyCount.update((value) => Math.max(0, value - 1));
-    if (this.busyCount() === 0) {
+  #endBusy(): void {
+    this.#busyCount.update((value) => Math.max(0, value - 1));
+    if (this.#busyCount() === 0) {
       this.busyMessage.set('');
       this.busyStartedAt = null;
-      this.clearBusyWatchdog();
+      this.#clearBusyWatchdog();
       return;
     }
 
-    this.refreshBusyWatchdog();
+    this.#refreshBusyWatchdog();
   }
 
-  private async withBusy<T>(message: string, task: () => Promise<T>): Promise<T> {
-    this.beginBusy(message);
-    await this.yieldToUi();
+  async #withBusy<T>(message: string, task: () => Promise<T>): Promise<T> {
+    this.#beginBusy(message);
+    await this.#yieldToUi();
     try {
       return await task();
     } finally {
-      this.endBusy();
+      this.#endBusy();
     }
   }
 
-  private async withLoadingFlag<T>(
+  async #withLoadingFlag<T>(
     setter: (value: boolean) => void,
     task: () => Promise<T>,
   ): Promise<T> {
@@ -1070,38 +1070,38 @@ export class AppStateService {
     }
   }
 
-  private async yieldToUi(): Promise<void> {
+  async #yieldToUi(): Promise<void> {
     await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
   }
 
-  private refreshBusyWatchdog(): void {
-    this.clearBusyWatchdog();
+  #refreshBusyWatchdog(): void {
+    this.#clearBusyWatchdog();
     this.busyWatchdogHandle = window.setTimeout(() => {
-      this.forceResetBusy('Operation timeout. Loader was reset automatically.');
+      this.#forceResetBusy('Operation timeout. Loader was reset automatically.');
     }, this.busyWatchdogMs);
   }
 
-  private clearBusyWatchdog(): void {
+  #clearBusyWatchdog(): void {
     if (this.busyWatchdogHandle !== null) {
       window.clearTimeout(this.busyWatchdogHandle);
       this.busyWatchdogHandle = null;
     }
   }
 
-  private forceResetBusy(message: string): void {
-    this.busyCount.set(0);
+  #forceResetBusy(message: string): void {
+    this.#busyCount.set(0);
     this.busyMessage.set('');
     this.busyStartedAt = null;
-    this.clearBusyWatchdog();
-    this.pushToast(message, 'warning');
+    this.#clearBusyWatchdog();
+    this.#pushToast(message, 'warning');
   }
 
   dismissLoader(): void {
-    this.forceResetBusy('Loader dismissed manually.');
+    this.#forceResetBusy('Loader dismissed manually.');
   }
 
   dismissToast(toastId: number): void {
-    this.runUiUpdate(() => {
+    this.#runUiUpdate(() => {
       const timer = this.toastTimerHandles.get(toastId);
       if (timer !== undefined) {
         window.clearTimeout(timer);
@@ -1112,42 +1112,42 @@ export class AppStateService {
     });
   }
 
-  private setSpotifyImportLoading(value: boolean): void {
+  #setSpotifyImportLoading(value: boolean): void {
     this.spotifyImportLoading.set(value);
   }
 
-  private setPdfLoading(value: boolean): void {
+  #setPdfLoading(value: boolean): void {
     this.pdfLoading.set(value);
   }
 
-  private setProxyImportLoading(value: boolean): void {
+  #setProxyImportLoading(value: boolean): void {
     this.proxyImportLoading.set(value);
   }
 
-  private setSpotifyTrackListImportLoading(value: boolean): void {
+  #setSpotifyTrackListImportLoading(value: boolean): void {
     this.spotifyTrackListImportLoading.set(value);
   }
 
-  private showToast(text: string, type: ToastMessage['type']): void {
-    this.runUiUpdate(() => {
-      this.pushToast(text, type);
+  #showToast(text: string, type: ToastMessage['type']): void {
+    this.#runUiUpdate(() => {
+      this.#pushToast(text, type);
     });
   }
 
-  private runUiUpdate(task: () => void): void {
+  #runUiUpdate(task: () => void): void {
     this.zone.run(() => {
       task();
     });
   }
 
-  private normalizeQrMode(value: unknown): QrPayloadMode {
+  #normalizeQrMode(value: unknown): QrPayloadMode {
     if (value === 'spotify-uri' || value === 'raw-url') {
       return value;
     }
     return 'canonical-url';
   }
 
-  private restoreSpotifyImportSettings(): void {
+  #restoreSpotifyImportSettings(): void {
     const raw = localStorage.getItem(this.spotifyImportKey);
     if (!raw) {
       return;
@@ -1166,7 +1166,7 @@ export class AppStateService {
       this.spotifyClientSecret = settings.clientSecret ?? '';
       this.spotifyPlaylistInput = settings.playlistInput ?? '';
       this.spotifyTrackListInput = settings.trackListInput ?? '';
-      this.spotifyImportDifficulty = this.normalizeDifficulty(settings.difficulty);
+      this.spotifyImportDifficulty = this.#normalizeDifficulty(settings.difficulty);
     } catch {
       this.spotifyClientId = '';
       this.spotifyClientSecret = '';
@@ -1176,7 +1176,7 @@ export class AppStateService {
     }
   }
 
-  private restoreSpotifyAuthSession(): void {
+  #restoreSpotifyAuthSession(): void {
     const raw = localStorage.getItem(this.spotifyAuthKey);
     if (!raw) {
       return;
@@ -1202,7 +1202,7 @@ export class AppStateService {
     }
   }
 
-  private persistSpotifyAuthSession(): void {
+  #persistSpotifyAuthSession(): void {
     if (!this.spotifyAuthSession) {
       localStorage.removeItem(this.spotifyAuthKey);
       return;
@@ -1211,7 +1211,7 @@ export class AppStateService {
     localStorage.setItem(this.spotifyAuthKey, JSON.stringify(this.spotifyAuthSession));
   }
 
-  private async completeSpotifyAuthFromRedirect(): Promise<void> {
+  async #completeSpotifyAuthFromRedirect(): Promise<void> {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const state = params.get('state');
@@ -1222,22 +1222,22 @@ export class AppStateService {
     }
 
     if (authError) {
-      this.pushToast(`Spotify login failed: ${authError}`, 'error');
-      this.clearSpotifyAuthQueryFromUrl();
+      this.#pushToast(`Spotify login failed: ${authError}`, 'error');
+      this.#clearSpotifyAuthQueryFromUrl();
       return;
     }
 
     const pkceRaw = sessionStorage.getItem(this.spotifyPkceKey);
     if (!pkceRaw || !state) {
-      this.pushToast('Spotify login session expired. Please connect again.', 'error');
-      this.clearSpotifyAuthQueryFromUrl();
+      this.#pushToast('Spotify login session expired. Please connect again.', 'error');
+      this.#clearSpotifyAuthQueryFromUrl();
       return;
     }
 
     const authCode = code;
     if (!authCode) {
-      this.pushToast('Spotify login response is missing authorization code.', 'error');
-      this.clearSpotifyAuthQueryFromUrl();
+      this.#pushToast('Spotify login response is missing authorization code.', 'error');
+      this.#clearSpotifyAuthQueryFromUrl();
       return;
     }
 
@@ -1245,46 +1245,46 @@ export class AppStateService {
     try {
       pkceState = JSON.parse(pkceRaw) as SpotifyPkceState;
     } catch {
-      this.pushToast('Invalid Spotify login session. Please connect again.', 'error');
-      this.clearSpotifyAuthQueryFromUrl();
+      this.#pushToast('Invalid Spotify login session. Please connect again.', 'error');
+      this.#clearSpotifyAuthQueryFromUrl();
       return;
     }
 
     if (pkceState.state !== state) {
-      this.pushToast('Spotify login validation failed (state mismatch).', 'error');
+      this.#pushToast('Spotify login validation failed (state mismatch).', 'error');
       sessionStorage.removeItem(this.spotifyPkceKey);
-      this.clearSpotifyAuthQueryFromUrl();
+      this.#clearSpotifyAuthQueryFromUrl();
       return;
     }
 
     try {
-      await this.withBusy('Connecting Spotify account...', async () => {
-        const session = await this.exchangeSpotifyCodeForSession(authCode, pkceState);
+      await this.#withBusy('Connecting Spotify account...', async () => {
+        const session = await this.#exchangeSpotifyCodeForSession(authCode, pkceState);
         this.spotifyAuthSession = session;
         this.spotifyClientId = session.clientId;
-        this.persistSpotifyAuthSession();
-        this.persistSpotifyImportSettings();
+        this.#persistSpotifyAuthSession();
+        this.#persistSpotifyImportSettings();
       });
-      this.pushToast('Spotify account connected.', 'success');
+      this.#pushToast('Spotify account connected.', 'success');
     } catch (error) {
       if (error instanceof SpotifyApiError && error.status === 408) {
-        this.pushToast(
+        this.#pushToast(
           'Spotify login timed out. Please retry and disable browser extensions for this tab if needed.',
           'error',
         );
       } else {
-        this.pushToast(
+        this.#pushToast(
           'Could not complete Spotify login. Verify redirect URI in dashboard.',
           'error',
         );
       }
     } finally {
       sessionStorage.removeItem(this.spotifyPkceKey);
-      this.clearSpotifyAuthQueryFromUrl();
+      this.#clearSpotifyAuthQueryFromUrl();
     }
   }
 
-  private persistSpotifyImportSettings(): void {
+  #persistSpotifyImportSettings(): void {
     localStorage.setItem(
       this.spotifyImportKey,
       JSON.stringify({
@@ -1297,7 +1297,7 @@ export class AppStateService {
     );
   }
 
-  private async getSpotifyUserAccessToken(): Promise<string | null> {
+  async #getSpotifyUserAccessToken(): Promise<string | null> {
     if (!this.spotifyAuthSession) {
       return null;
     }
@@ -1308,22 +1308,22 @@ export class AppStateService {
 
     if (!this.spotifyAuthSession.refreshToken) {
       this.disconnectSpotifyAccount();
-      this.pushToast('Spotify session expired. Connect your account again.', 'warning');
+      this.#pushToast('Spotify session expired. Connect your account again.', 'warning');
       return null;
     }
 
     try {
-      this.spotifyAuthSession = await this.refreshSpotifyAccessToken(this.spotifyAuthSession);
-      this.persistSpotifyAuthSession();
+      this.spotifyAuthSession = await this.#refreshSpotifyAccessToken(this.spotifyAuthSession);
+      this.#persistSpotifyAuthSession();
       return this.spotifyAuthSession.accessToken;
     } catch {
       this.disconnectSpotifyAccount();
-      this.pushToast('Spotify session refresh failed. Connect your account again.', 'error');
+      this.#pushToast('Spotify session refresh failed. Connect your account again.', 'error');
       return null;
     }
   }
 
-  private async exchangeSpotifyCodeForSession(
+  async #exchangeSpotifyCodeForSession(
     code: string,
     pkceState: SpotifyPkceState,
   ): Promise<SpotifyAuthSession> {
@@ -1334,24 +1334,24 @@ export class AppStateService {
     );
   }
 
-  private async refreshSpotifyAccessToken(
+  async #refreshSpotifyAccessToken(
     session: SpotifyAuthSession,
   ): Promise<SpotifyAuthSession> {
     return this.spotifyApiService.refreshSpotifyAccessToken(session, this.spotifyRequestTimeoutMs);
   }
 
-  private resolveSpotifyRedirectUri(): string {
+  #resolveSpotifyRedirectUri(): string {
     const { origin, hostname, port } = window.location;
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
       const localPort = port || '4200';
       return `http://127.0.0.1:${localPort}/callback`;
     }
 
-    const appRoot = this.getAppRootPath().replace(/\/$/, '');
+    const appRoot = this.#getAppRootPath().replace(/\/$/, '');
     return `${origin}${appRoot}/callback`;
   }
 
-  private getAppRootPath(): string {
+  #getAppRootPath(): string {
     const { hostname, pathname } = window.location;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return '/';
@@ -1361,25 +1361,25 @@ export class AppStateService {
     return firstSegment ? `/${firstSegment}/` : '/';
   }
 
-  private clearSpotifyAuthQueryFromUrl(): void {
+  #clearSpotifyAuthQueryFromUrl(): void {
     const shouldResetToRoot = /\/callback\/?$/.test(window.location.pathname);
-    const nextPath = shouldResetToRoot ? this.getAppRootPath() : window.location.pathname;
+    const nextPath = shouldResetToRoot ? this.#getAppRootPath() : window.location.pathname;
     window.history.replaceState({}, '', `${nextPath}${window.location.hash || ''}`);
   }
 
-  private randomUrlSafeString(length: number): string {
+  #randomUrlSafeString(length: number): string {
     return this.spotifyApiService.randomUrlSafeString(length);
   }
 
-  private async createCodeChallenge(verifier: string): Promise<string> {
+  async #createCodeChallenge(verifier: string): Promise<string> {
     return this.spotifyApiService.createCodeChallenge(verifier);
   }
 
-  private extractSpotifyPlaylistId(input: string): string | null {
+  #extractSpotifyPlaylistId(input: string): string | null {
     return this.spotifyApiService.extractSpotifyPlaylistId(input);
   }
 
-  private async fetchSpotifyClientCredentialsToken(
+  async #fetchSpotifyClientCredentialsToken(
     clientId: string,
     clientSecret: string,
   ): Promise<string> {
@@ -1390,7 +1390,7 @@ export class AppStateService {
     );
   }
 
-  private async fetchSpotifyPlaylistTracks(
+  async #fetchSpotifyPlaylistTracks(
     playlistId: string,
     accessToken: string,
   ): Promise<SpotifyPlaylistTrack[]> {
@@ -1401,7 +1401,7 @@ export class AppStateService {
     );
   }
 
-  private async fetchSpotifyTracksByIds(
+  async #fetchSpotifyTracksByIds(
     trackIds: string[],
     accessToken: string,
   ): Promise<SpotifyPlaylistTrack[]> {
@@ -1412,7 +1412,7 @@ export class AppStateService {
     );
   }
 
-  private async fetchSpotifyTrackDetails(
+  async #fetchSpotifyTrackDetails(
     trackId: string,
     accessToken: string,
   ): Promise<SpotifyPlaylistTrack | null> {
@@ -1423,11 +1423,11 @@ export class AppStateService {
     );
   }
 
-  private extractSpotifyTrackId(input: string): string | null {
+  #extractSpotifyTrackId(input: string): string | null {
     return this.spotifyApiService.extractSpotifyTrackId(input);
   }
 
-  private resolveQrPayload(
+  #resolveQrPayload(
     spotifyUrl: string,
     mode: QrPayloadMode,
   ): { payload: string | null; trackId: string | null; warning?: string } {
@@ -1436,7 +1436,7 @@ export class AppStateService {
       return { payload: null, trackId: null };
     }
 
-    const trackId = this.extractSpotifyTrackId(input);
+    const trackId = this.#extractSpotifyTrackId(input);
     if (mode === 'raw-url') {
       return {
         payload: input,
@@ -1467,7 +1467,7 @@ export class AppStateService {
     };
   }
 
-  private async restoreCards(): Promise<void> {
+  async #restoreCards(): Promise<void> {
     const raw = localStorage.getItem(this.storageKey);
     if (!raw) {
       this.applyFilters();
@@ -1479,21 +1479,21 @@ export class AppStateService {
       this.cards = Array.isArray(parsed) ? parsed : [];
 
       for (const card of this.cards) {
-        const normalizedMode = this.normalizeQrMode(card.qrMode);
+        const normalizedMode = this.#normalizeQrMode(card.qrMode);
         const existingPayload = card.qrPayload?.trim();
         const resolved = existingPayload
           ? {
               payload: existingPayload,
-              trackId: card.spotifyTrackId ?? this.extractSpotifyTrackId(card.spotifyUrl),
+              trackId: card.spotifyTrackId ?? this.#extractSpotifyTrackId(card.spotifyUrl),
             }
-          : this.resolveQrPayload(card.spotifyUrl, normalizedMode);
+          : this.#resolveQrPayload(card.spotifyUrl, normalizedMode);
 
         card.qrMode = normalizedMode;
         card.spotifyTrackId = resolved.trackId;
         card.qrPayload = resolved.payload ?? card.spotifyUrl;
 
         if (!card.qrDataUrl && card.qrPayload) {
-          card.qrDataUrl = (await this.qrToDataUrl(card.qrPayload)) ?? '';
+          card.qrDataUrl = (await this.#qrToDataUrl(card.qrPayload)) ?? '';
         }
       }
 
@@ -1504,11 +1504,11 @@ export class AppStateService {
     }
   }
 
-  private async persistCards(): Promise<void> {
+  async #persistCards(): Promise<void> {
     localStorage.setItem(this.storageKey, JSON.stringify(this.cards));
   }
 
-  private pushToast(text: string, type: ToastMessage['type']): void {
+  #pushToast(text: string, type: ToastMessage['type']): void {
     const existing = this.toasts.find((item) => item.text === text && item.type === type);
     if (existing) {
       this.dismissToast(existing.id);
@@ -1524,14 +1524,14 @@ export class AppStateService {
     this.toastTimerHandles.set(toast.id, timer);
   }
 
-  private async qrToDataUrl(text: string): Promise<string | null> {
+  async #qrToDataUrl(text: string): Promise<string | null> {
     return this.qrCodeService.toDataUrl(text);
   }
 
   #queueSpotifyAutofill(spotifyUrl: string): void {
     this.#clearSpotifyAutofillTimer();
 
-    const trackId = this.extractSpotifyTrackId(spotifyUrl);
+    const trackId = this.#extractSpotifyTrackId(spotifyUrl);
     if (!trackId) {
       this.spotifyAutofillLoading.set(false);
       return;
@@ -1559,14 +1559,14 @@ export class AppStateService {
 
   async #autofillFormFromSpotifyTrack(trackId: string, requestId: number): Promise<void> {
     try {
-      const accessToken = await this.getSpotifyTrackLookupAccessToken();
-      const details = await this.fetchSpotifyTrackDetails(trackId, accessToken);
+      const accessToken = await this.#getSpotifyTrackLookupAccessToken();
+      const details = await this.#fetchSpotifyTrackDetails(trackId, accessToken);
       if (!details || requestId !== this.#spotifyAutofillRequestId) {
         return;
       }
 
-      this.runUiUpdate(() => {
-        const currentTrackId = this.extractSpotifyTrackId(this.form.spotifyUrl);
+      this.#runUiUpdate(() => {
+        const currentTrackId = this.#extractSpotifyTrackId(this.form.spotifyUrl);
         if (currentTrackId !== trackId) {
           return;
         }
@@ -1591,7 +1591,7 @@ export class AppStateService {
 
       if (error instanceof SpotifyApiError && error.status === 401) {
         if (!this.#spotifyAutofillAuthHintShown) {
-          this.pushToast(
+          this.#pushToast(
             'Spotify autofill needs a Spotify login or Client ID + Client Secret in the Spotify section.',
             'info',
           );
@@ -1600,7 +1600,7 @@ export class AppStateService {
         return;
       }
 
-      this.pushToast('Could not autofill metadata from that Spotify URL.', 'warning');
+      this.#pushToast('Could not autofill metadata from that Spotify URL.', 'warning');
     } finally {
       if (requestId === this.#spotifyAutofillRequestId) {
         this.spotifyAutofillLoading.set(false);
