@@ -30,7 +30,7 @@ export class AppStateService {
   readonly busyHardLimitMs = 45000;
   readonly spotifyOAuthScope = 'playlist-read-private playlist-read-collaborative';
   readonly toastDurationMs = 2800;
-  readonly pageSize = 12;
+  readonly pageSize = 18;
   readonly difficulties: Difficulty[] = ['Original', 'Pro', 'Expert'];
   readonly qrModes: QrModeOption[] = [
     { value: 'raw-url', label: 'Raw URL mode (exact URL entered)' },
