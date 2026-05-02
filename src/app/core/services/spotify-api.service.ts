@@ -241,6 +241,64 @@ export class SpotifyApiService {
     return tracks;
   }
 
+  async fetchSpotifyTrackDetails(
+    trackId: string,
+    accessToken: string,
+    timeoutMs: number,
+  ): Promise<SpotifyPlaylistTrack | null> {
+    const response = await this.fetchWithTimeout(
+      `https://api.spotify.com/v1/tracks/${encodeURIComponent(trackId)}`,
+      timeoutMs,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      let details = '';
+      try {
+        details = await response.text();
+      } catch {
+        details = '';
+      }
+      throw new SpotifyApiError('spotify-track-details-fetch-failed', response.status, details);
+    }
+
+    const json = (await response.json()) as {
+      id?: string;
+      name?: string;
+      artists?: Array<{ id?: string; name?: string }>;
+      album?: { name?: string; release_date?: string };
+      external_urls?: { spotify?: string };
+    };
+
+    if (!json.id || !json.name) {
+      return null;
+    }
+
+    const releaseDate = json.album?.release_date ?? '';
+    const releaseYear = Number.parseInt(releaseDate.slice(0, 4), 10);
+    const artistNames = (json.artists ?? []).map((artist) => artist.name ?? '').filter(Boolean);
+    const artistIds = (json.artists ?? []).map((artist) => artist.id ?? '').filter(Boolean);
+    const genre = await this.fetchPrimaryArtistGenre(artistIds, accessToken, timeoutMs);
+
+    return {
+      id: json.id,
+      name: json.name,
+      artists: artistNames,
+      album: json.album?.name ?? '',
+      year: Number.isFinite(releaseYear) ? releaseYear : 2000,
+      spotifyUrl: json.external_urls?.spotify ?? `https://open.spotify.com/track/${json.id}`,
+      genre,
+    };
+  }
+
   async exchangeSpotifyCodeForSession(
     code: string,
     pkceState: SpotifyPkceState,
@@ -357,6 +415,39 @@ export class SpotifyApiService {
     } finally {
       window.clearTimeout(timer);
     }
+  }
+
+  private async fetchPrimaryArtistGenre(
+    artistIds: string[],
+    accessToken: string,
+    timeoutMs: number,
+  ): Promise<string> {
+    if (artistIds.length === 0) {
+      return '';
+    }
+
+    // Try each artist individually using the single-artist endpoint,
+    // which has broader access than the batch /v1/artists?ids= endpoint.
+    for (const id of artistIds) {
+      const artistUrl = `https://api.spotify.com/v1/artists/${encodeURIComponent(id)}`;
+      const response = await this.fetchWithTimeout(artistUrl, timeoutMs, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const json = (await response.json()) as { genres?: string[] };
+      const primary = json.genres?.find((g) => g.trim().length > 0);
+      if (primary) {
+        return primary;
+      }
+    }
+
+    return '';
   }
 
   private base64UrlEncode(buffer: ArrayBuffer): string {

@@ -23,13 +23,11 @@ test('creates a card and shows success toast', async ({ page }) => {
     .fill('https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V');
   await page.getByRole('button', { name: 'Add Card' }).click();
 
-  const dismissLoader = page.getByRole('button', { name: 'Dismiss Loader' });
-  if (await dismissLoader.isVisible().catch(() => false)) {
-    await dismissLoader.click();
-  }
-
   await expect(page.locator('.grid .card')).toHaveCount(1, { timeout: 30000 });
   await expect(page.locator('.grid .card h3')).toContainText('Playwright Song');
+  await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
+    timeout: 5000,
+  });
 });
 
 test('restores cards from localStorage after reload', async ({ page }) => {

@@ -1,6 +1,6 @@
 <app-toast-layer [toasts]="state.toasts" (dismiss)="state.dismissToast($event)"></app-toast-layer>
 
-<app-loader-overlay [isBusy]="state.isBusy" [busyMessage]="state.busyMessage"
+<app-loader-overlay [isBusy]="state.isBusy()" [busyMessage]="state.busyMessage()"
   (dismiss)="state.dismissLoader()"></app-loader-overlay>
 
 <app-confirm-modal [visible]="!!state.cardPendingDelete" title="Delete card"
@@ -42,7 +42,7 @@
     <app-card-form-panel [form]="state.form" [editingCardId]="state.editingCardId" [difficulties]="state.difficulties"
       [qrModes]="state.qrModes" [qrMode]="state.qrMode"
       [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)"
-      [spotifyAutofillLoading]="state.spotifyAutofillLoading" (formChange)="state.onFormChange($event)"
+      [spotifyAutofillLoading]="state.spotifyAutofillLoading()" (formChange)="state.onFormChange($event)"
       (qrModeChange)="state.qrMode = $event" (save)="state.saveOrUpdateCard()"
       (clear)="state.resetForm()"></app-card-form-panel>
 
@@ -54,7 +54,7 @@
     [selectedPages]="state.selectedPages" [selectedCardIds]="state.selectedCardIds" [difficulties]="state.difficulties"
     [searchQuery]="state.searchQuery" [difficultyFilter]="state.difficultyFilter" [sortMode]="state.sortMode"
     [selectedCount]="state.selectedCount" [allFilteredSelected]="state.allFilteredSelected"
-    [cardsCount]="state.cards.length" [pdfLoading]="state.pdfLoading" [revealYear]="state.revealYear"
+    [cardsCount]="state.cards.length" [pdfLoading]="state.pdfLoading()" [revealYear]="state.revealYear"
     [totalPages]="state.totalPages" [currentPage]="state.currentPage" [qrModeLabel]="state.getQrModeLabel(state.qrMode)"
     (searchQueryChange)="state.onSearchQueryChange($event)"
     (difficultyFilterChange)="state.onDifficultyFilterChange($event)" (sortModeChange)="state.onSortModeChange($event)"

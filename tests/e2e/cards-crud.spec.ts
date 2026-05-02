@@ -21,15 +21,13 @@ test('edits an existing card', async ({ page }) => {
     .fill('https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V');
   await page.getByRole('button', { name: 'Update Card' }).click();
 
-  const dismissLoader = page.getByRole('button', { name: 'Dismiss Loader' });
-  if (await dismissLoader.isVisible().catch(() => false)) {
-    await dismissLoader.click();
-  }
-
   await expect(page.locator('.grid .card', { hasText: 'Seed Song 2' }).locator('p')).toContainText(
     'Edited Artist',
     { timeout: 30000 },
   );
+  await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
+    timeout: 5000,
+  });
 });
 
 test('duplicates a card and deletes with confirmation modal', async ({ page }) => {

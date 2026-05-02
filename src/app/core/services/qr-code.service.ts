@@ -10,8 +10,8 @@ export class QrCodeService {
         margin: 1,
         width: 256,
         color: {
-          dark: '#350e41',
-          light: '#ffffff',
+          dark: '#000',
+          light: '#fff',
         },
       });
     } catch {

@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { computed, Injectable, NgZone, signal } from '@angular/core';
 import * as Papa from 'papaparse';
 import {
   CardDraft,
@@ -52,22 +52,28 @@ export class AppStateService {
   sortMode: SortMode = 'recent';
   currentPage = 1;
   revealYear = true;
-  pdfLoading = false;
+  pdfLoading = signal(false);
   qrMode: QrPayloadMode = 'canonical-url';
   spotifyClientId = '';
   spotifyClientSecret = '';
   spotifyPlaylistInput = '';
   spotifyTrackListInput = '';
   spotifyImportDifficulty: Difficulty = 'Original';
-  spotifyImportLoading = false;
-  spotifyTrackListImportLoading = false;
-  proxyImportLoading = false;
-  busyCount = 0;
-  busyMessage = '';
+  spotifyImportLoading = signal(false);
+  spotifyTrackListImportLoading = signal(false);
+  proxyImportLoading = signal(false);
+  spotifyAutofillLoading = signal(false);
+  private readonly busyCount = signal(0);
+  busyMessage = signal('');
+  isBusy = computed(() => this.busyCount() > 0);
   busyWatchdogHandle: number | null = null;
   busyStartedAt: number | null = null;
   toastTimerHandles = new Map<number, number>();
   spotifyAuthSession: SpotifyAuthSession | null = null;
+  #spotifyAutofillTimer: number | null = null;
+  #spotifyAutofillRequestId = 0;
+  #spotifyAutofilledTrackId: string | null = null;
+  #spotifyAutofillAuthHintShown = false;
 
   constructor(
     private readonly zone: NgZone,
@@ -81,7 +87,7 @@ export class AppStateService {
     void this.completeSpotifyAuthFromRedirect();
 
     window.setInterval(() => {
-      if (!this.isBusy || this.busyStartedAt === null) {
+      if (!this.isBusy() || this.busyStartedAt === null) {
         return;
       }
 
@@ -94,10 +100,6 @@ export class AppStateService {
 
   get selectedCount(): number {
     return this.selectedCardIds.size;
-  }
-
-  get isBusy(): boolean {
-    return this.busyCount > 0;
   }
 
   get spotifyConnected(): boolean {
@@ -248,6 +250,9 @@ export class AppStateService {
   resetForm(): void {
     this.form = this.emptyDraft();
     this.editingCardId = null;
+    this.#spotifyAutofilledTrackId = null;
+    this.spotifyAutofillLoading.set(false);
+    this.#clearSpotifyAutofillTimer();
   }
 
   toggleSelect(cardId: number): void {
@@ -310,7 +315,12 @@ export class AppStateService {
   }
 
   onFormChange(next: CardDraft): void {
+    const previousSpotifyUrl = this.form.spotifyUrl;
     this.form = next;
+
+    if (next.spotifyUrl !== previousSpotifyUrl) {
+      this.#queueSpotifyAutofill(next.spotifyUrl);
+    }
   }
 
   onSearchQueryChange(value: string): void {
@@ -347,16 +357,15 @@ export class AppStateService {
       return;
     }
 
-    this.pdfLoading = true;
-    this.beginBusy('Exporting PDF...');
-
-    try {
-      this.pdfExportService.exportCardsSheetPdf(selected, this.revealYear);
-      this.pushToast('PDF generated with 4x4 card sheet layout.', 'success');
-    } finally {
-      this.pdfLoading = false;
-      this.endBusy();
-    }
+    await this.withLoadingFlag(
+      (value) => this.setPdfLoading(value),
+      async () => {
+        await this.withBusy('Exporting PDF...', async () => {
+          this.pdfExportService.exportCardsSheetPdf(selected, this.revealYear);
+          this.pushToast('PDF generated with 4x4 card sheet layout.', 'success');
+        });
+      },
+    );
   }
 
   printSelected(): void {
@@ -697,7 +706,7 @@ export class AppStateService {
       return;
     }
 
-    this.proxyImportLoading = true;
+    this.setProxyImportLoading(true);
     this.persistSpotifyImportSettings();
 
     try {
@@ -739,7 +748,7 @@ export class AppStateService {
         'error',
       );
     } finally {
-      this.proxyImportLoading = false;
+      this.setProxyImportLoading(false);
     }
   }
 
@@ -979,7 +988,7 @@ export class AppStateService {
 
       const updateProgress = async (forceYield = false): Promise<void> => {
         const percent = Math.round((processed / total) * 100);
-        this.busyMessage = `Imported ${processed}/${total} (${percent}%)...`;
+        this.busyMessage.set(`Imported ${processed}/${total} (${percent}%)...`);
         if (forceYield || processed % 10 === 0) {
           await this.yieldToUi();
         }
@@ -1041,18 +1050,18 @@ export class AppStateService {
   }
 
   private beginBusy(message: string): void {
-    if (this.busyCount === 0) {
+    if (this.busyCount() === 0) {
       this.busyStartedAt = Date.now();
     }
-    this.busyCount += 1;
-    this.busyMessage = message;
+    this.busyCount.update((value) => value + 1);
+    this.busyMessage.set(message);
     this.refreshBusyWatchdog();
   }
 
   private endBusy(): void {
-    this.busyCount = Math.max(0, this.busyCount - 1);
-    if (this.busyCount === 0) {
-      this.busyMessage = '';
+    this.busyCount.update((value) => Math.max(0, value - 1));
+    if (this.busyCount() === 0) {
+      this.busyMessage.set('');
       this.busyStartedAt = null;
       this.clearBusyWatchdog();
       return;
@@ -1068,6 +1077,18 @@ export class AppStateService {
       return await task();
     } finally {
       this.endBusy();
+    }
+  }
+
+  private async withLoadingFlag<T>(
+    setter: (value: boolean) => void,
+    task: () => Promise<T>,
+  ): Promise<T> {
+    setter(true);
+    try {
+      return await task();
+    } finally {
+      setter(false);
     }
   }
 
@@ -1090,8 +1111,8 @@ export class AppStateService {
   }
 
   private forceResetBusy(message: string): void {
-    this.busyCount = 0;
-    this.busyMessage = '';
+    this.busyCount.set(0);
+    this.busyMessage.set('');
     this.busyStartedAt = null;
     this.clearBusyWatchdog();
     this.pushToast(message, 'warning');
@@ -1114,15 +1135,19 @@ export class AppStateService {
   }
 
   private setSpotifyImportLoading(value: boolean): void {
-    this.runUiUpdate(() => {
-      this.spotifyImportLoading = value;
-    });
+    this.spotifyImportLoading.set(value);
+  }
+
+  private setPdfLoading(value: boolean): void {
+    this.pdfLoading.set(value);
+  }
+
+  private setProxyImportLoading(value: boolean): void {
+    this.proxyImportLoading.set(value);
   }
 
   private setSpotifyTrackListImportLoading(value: boolean): void {
-    this.runUiUpdate(() => {
-      this.spotifyTrackListImportLoading = value;
-    });
+    this.spotifyTrackListImportLoading.set(value);
   }
 
   private showToast(text: string, type: ToastMessage['type']): void {
@@ -1409,6 +1434,17 @@ export class AppStateService {
     );
   }
 
+  private async fetchSpotifyTrackDetails(
+    trackId: string,
+    accessToken: string,
+  ): Promise<SpotifyPlaylistTrack | null> {
+    return this.spotifyApiService.fetchSpotifyTrackDetails(
+      trackId,
+      accessToken,
+      this.spotifyRequestTimeoutMs,
+    );
+  }
+
   private extractSpotifyTrackId(input: string): string | null {
     return this.spotifyApiService.extractSpotifyTrackId(input);
   }
@@ -1512,5 +1548,85 @@ export class AppStateService {
 
   private async qrToDataUrl(text: string): Promise<string | null> {
     return this.qrCodeService.toDataUrl(text);
+  }
+
+  #queueSpotifyAutofill(spotifyUrl: string): void {
+    this.#clearSpotifyAutofillTimer();
+
+    const trackId = this.extractSpotifyTrackId(spotifyUrl);
+    if (!trackId) {
+      this.spotifyAutofillLoading.set(false);
+      return;
+    }
+
+    if (trackId === this.#spotifyAutofilledTrackId) {
+      this.spotifyAutofillLoading.set(false);
+      return;
+    }
+
+    const requestId = ++this.#spotifyAutofillRequestId;
+    this.spotifyAutofillLoading.set(true);
+
+    this.#spotifyAutofillTimer = window.setTimeout(() => {
+      void this.#autofillFormFromSpotifyTrack(trackId, requestId);
+    }, 550);
+  }
+
+  #clearSpotifyAutofillTimer(): void {
+    if (this.#spotifyAutofillTimer !== null) {
+      window.clearTimeout(this.#spotifyAutofillTimer);
+      this.#spotifyAutofillTimer = null;
+    }
+  }
+
+  async #autofillFormFromSpotifyTrack(trackId: string, requestId: number): Promise<void> {
+    try {
+      const accessToken = await this.getSpotifyTrackLookupAccessToken();
+      const details = await this.fetchSpotifyTrackDetails(trackId, accessToken);
+      if (!details || requestId !== this.#spotifyAutofillRequestId) {
+        return;
+      }
+
+      this.runUiUpdate(() => {
+        const currentTrackId = this.extractSpotifyTrackId(this.form.spotifyUrl);
+        if (currentTrackId !== trackId) {
+          return;
+        }
+
+        this.form = {
+          ...this.form,
+          title: details.name || this.form.title,
+          artist: details.artists.join(', ') || this.form.artist,
+          year: details.year || this.form.year,
+          spotifyUrl: details.spotifyUrl || this.form.spotifyUrl,
+          album: details.album || this.form.album,
+          genre: details.genre || this.form.genre,
+        };
+      });
+
+      this.#spotifyAutofilledTrackId = trackId;
+      this.#spotifyAutofillAuthHintShown = false;
+    } catch (error) {
+      if (requestId !== this.#spotifyAutofillRequestId) {
+        return;
+      }
+
+      if (error instanceof SpotifyApiError && error.status === 401) {
+        if (!this.#spotifyAutofillAuthHintShown) {
+          this.pushToast(
+            'Spotify autofill needs a Spotify login or Client ID + Client Secret in the Spotify section.',
+            'info',
+          );
+          this.#spotifyAutofillAuthHintShown = true;
+        }
+        return;
+      }
+
+      this.pushToast('Could not autofill metadata from that Spotify URL.', 'warning');
+    } finally {
+      if (requestId === this.#spotifyAutofillRequestId) {
+        this.spotifyAutofillLoading.set(false);
+      }
+    }
   }
 }

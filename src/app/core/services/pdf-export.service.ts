@@ -79,34 +79,62 @@ export class PdfExportService {
     pdf.rect(x + safeInset, y + safeInset, w - safeInset * 2, h - safeInset * 2, 'S');
 
     const centerX = x + w / 2;
-    const tY = y + safeInset + 9.5;
+    const maxTextW = w - safeInset * 2 - 4;
 
-    pdf.setTextColor(0, 0, 0);
+    // --- measure each block so they never overlap ---
+    const artistFontSize = 8;
+    const titleFontSize = 10;
+    const yearFontSize = 22;
+    // approximate mm per line at each font size (pt → mm with 1.2 leading)
+    const artistLineH = artistFontSize * 0.3528 * 1.25;
+    const titleLineH = titleFontSize * 0.3528 * 1.25;
+    const yearLineH = yearFontSize * 0.3528 * 1.25;
+
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(11);
-    pdf.text(card.title, centerX, tY, {
-      align: 'center',
-      maxWidth: w - safeInset * 2 - 4,
-    });
-
-    pdf.setFontSize(13);
-    pdf.text(revealYear ? String(card.year) : 'YEAR', centerX, tY + 8, { align: 'center' });
+    pdf.setFontSize(artistFontSize);
+    const artistLines = pdf.splitTextToSize(card.artist, maxTextW) as string[];
 
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.text(card.artist, centerX, tY + 16, {
-      align: 'center',
-      maxWidth: w - safeInset * 2 - 4,
-    });
+    pdf.setFontSize(titleFontSize);
+    const titleLines = pdf.splitTextToSize(card.title, maxTextW) as string[];
 
+    const artistBlockH = artistLines.length * artistLineH;
+    const titleBlockH = titleLines.length * titleLineH;
+    const gapBetween = 2.5; // mm between BAND → SONG
+    const gapBeforeYear = 8; // mm between SONG → YEAR
+
+    const totalBlockH = artistBlockH + gapBetween + titleBlockH + gapBeforeYear + yearLineH;
+
+    // vertically centre the block in the upper half (above the divider)
     const splitY = y + h * 0.5 + 1;
+    const upperAreaTop = y + safeInset + 1;
+    const upperAreaH = splitY - upperAreaTop;
+    let curY = upperAreaTop + (upperAreaH - totalBlockH) / 2 + artistLineH;
+
+    // 1 — BAND (bold)
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(artistFontSize);
+    pdf.text(artistLines, centerX, curY, { align: 'center' });
+    curY += artistBlockH + gapBetween;
+
+    // 2 — SONG NAME (normal)
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(titleFontSize);
+    pdf.text(titleLines, centerX, curY, { align: 'center' });
+    curY += titleBlockH + gapBeforeYear;
+
+    // 3 — YEAR (big)
+    pdf.setFontSize(yearFontSize);
+    pdf.text(revealYear ? String(card.year) : 'YEAR', centerX, curY, { align: 'center' });
+
     pdf.setLineDashPattern([1, 1], 0);
     pdf.line(x + safeInset + 1, splitY, x + w - safeInset - 1, splitY);
 
     const qrX = centerX - qrSize / 2;
     const qrY = splitY + 4.5;
-    pdf.rect(qrX, qrY, qrSize, qrSize, 'S');
     pdf.setLineDashPattern([], 0);
+    pdf.rect(qrX, qrY, qrSize, qrSize, 'S');
 
     if (card.qrDataUrl) {
       pdf.addImage(
