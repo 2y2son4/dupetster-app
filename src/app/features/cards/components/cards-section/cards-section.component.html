@@ -33,29 +33,29 @@
       </div>
 
       <div class="quick-actions-row">
-        <button class="btn btn-primary" [disabled]="selectedCount() === 0 || pdfLoading()" (click)="exportPdf.emit()">
-          @if (!pdfLoading()) {
-            Export PDF
-          } @else {
-            Generating...
-          }
-        </button>
-        <button class="btn btn-primary" (click)="exportJson.emit()">Export JSON</button>
-        <button class="btn btn-primary" (click)="exportCsv.emit()">Export CSV</button>
-      </div>
-
-      <div class="quick-actions-row">
-        <button class="btn btn-ghost" type="button" (click)="jsonImportInput.click()">
+        <button class="btn btn-primary" type="button" (click)="jsonImportInput.click()">
           Import JSON
         </button>
 
-        <button class="btn btn-ghost" type="button" (click)="csvImportInput.click()">
+        <button class="btn btn-primary" type="button" (click)="csvImportInput.click()">
           Import CSV
         </button>
 
         <input #jsonImportInput class="import-input" type="file" accept="application/json,.json"
           (change)="onImportJson($event)" />
         <input #csvImportInput class="import-input" type="file" accept="text/csv,.csv" (change)="onImportCsv($event)" />
+      </div>
+
+      <div class="quick-actions-row">
+        <button class="btn btn-ghost" [disabled]="selectedCount() === 0 || pdfLoading()" (click)="exportPdf.emit()">
+          @if (!pdfLoading()) {
+            Export PDF
+          } @else {
+            Generating...
+          }
+        </button>
+        <button class="btn btn-ghost" (click)="exportJson.emit()">Export JSON</button>
+        <button class="btn btn-ghost" (click)="exportCsv.emit()">Export CSV</button>
       </div>
     </div>
   </div>
