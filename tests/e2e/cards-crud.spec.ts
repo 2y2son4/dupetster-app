@@ -14,8 +14,8 @@ test.describe('cards crud', { tag: ['@card-management', '@CRUD', '@actions'] }, 
 
     await page.goto('/');
 
-    const firstCard = page.locator('.grid .card').first();
-    await firstCard.getByRole('button', { name: 'Edit' }).click();
+    const targetCard = page.locator('.grid .card', { hasText: 'Seed Song 2' }).first();
+    await targetCard.getByRole('button', { name: 'Edit' }).click();
     await page.getByLabel('Artist *').fill('Edited Artist');
     await page
       .getByLabel('Spotify URL *')

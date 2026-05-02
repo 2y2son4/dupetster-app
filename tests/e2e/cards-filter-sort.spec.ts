@@ -57,7 +57,7 @@ test.describe(
     });
 
     test('supports pagination and page navigation', async ({ page }) => {
-      const cards = Array.from({ length: 13 }, (_, idx) =>
+      const cards = Array.from({ length: 24 }, (_, idx) =>
         makeCard({ id: idx + 1, title: `Paged Song ${idx + 1}`, year: 2000 + idx }),
       );
       await seedCards(page, cards);
@@ -65,15 +65,15 @@ test.describe(
       await page.goto('/');
 
       await expect(page.getByText('Page 1 / 2')).toBeVisible();
-      await expect(page.locator('.grid .card')).toHaveCount(12);
+      await expect(page.locator('.grid .card')).toHaveCount(18);
 
       await page.getByRole('button', { name: 'Next' }).click();
       await expect(page.getByText('Page 2 / 2')).toBeVisible();
-      await expect(page.locator('.grid .card')).toHaveCount(1);
+      await expect(page.locator('.grid .card')).toHaveCount(6);
 
       await page.getByRole('button', { name: 'Previous' }).click();
       await expect(page.getByText('Page 1 / 2')).toBeVisible();
-      await expect(page.locator('.grid .card')).toHaveCount(12);
+      await expect(page.locator('.grid .card')).toHaveCount(18);
     });
 
     test('selects and unselects all filtered cards', async ({ page }) => {
