@@ -142,6 +142,7 @@ export class PdfExportService {
     curY += titleBlockH + gapBeforeYear;
 
     // 3 — YEAR (big)
+    pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(yearFontSize);
     pdf.text(revealYear ? String(card.year) : 'YEAR', centerX, curY, { align: 'center' });
 
