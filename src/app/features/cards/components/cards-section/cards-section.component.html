@@ -1,6 +1,5 @@
 <section class="right panel">
   <div class="filter-actions-container">
-    <!-- <div class="toolbar"> -->
     <div class="toolbar-controls">
       <h2>Cards ({{ selectedCount() }}/{{ filteredCards().length }})</h2>
       <input type="text" placeholder="Search title or artist" [ngModel]="searchQuery()"
@@ -17,7 +16,6 @@
         <option value="title">Title</option>
       </select>
     </div>
-    <!-- </div> -->
 
     <div class="quick-actions">
       <div class="quick-actions-row">

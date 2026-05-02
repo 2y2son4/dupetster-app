@@ -54,37 +54,4 @@ test.describe('import export', { tag: ['@transfer-flow', '@file-transfer'] }, ()
 
     await expect(page.getByRole('heading', { name: 'Dupetster' })).toBeVisible();
   });
-
-  // test('rebuild QR updates cards using current mode', async ({ page }) => {
-  //   await seedCards(page, [
-  //     makeCard({
-  //       id: 1,
-  //       title: 'Seed Song 1',
-  //       spotifyUrl: 'https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V',
-  //       qrMode: 'canonical-url',
-  //       qrPayload: 'https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V?si=old',
-  //     }),
-  //   ]);
-  //   await page.goto('/');
-
-  //   await page.getByRole('button', { name: 'Rebuild QR (Current Mode)' }).click();
-
-  //   await expect(
-  //     page.getByText('Regenerated 1 cards using Raw URL mode (exact URL entered).'),
-  //   ).toBeVisible({ timeout: 15000 });
-
-  //   const storedCards = await page.evaluate((storageKey: string) => {
-  //     const raw = localStorage.getItem(storageKey);
-  //     if (!raw) {
-  //       return [] as Array<{ qrMode: string; qrPayload: string }>;
-  //     }
-  //     return JSON.parse(raw) as Array<{ qrMode: string; qrPayload: string }>;
-  //   }, STORAGE_KEY);
-
-  //   await expect(storedCards).toHaveLength(1);
-  //   await expect(storedCards[0]?.qrMode).toBe('raw-url');
-  //   await expect(storedCards[0]?.qrPayload).toBe(
-  //     'https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V',
-  //   );
-  // });
 });
