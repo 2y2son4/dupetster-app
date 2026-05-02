@@ -9,7 +9,6 @@ type SeedCard = {
   year: number;
   spotifyUrl: string;
   album: string;
-  genre: string;
   difficulty: 'Original' | 'Pro' | 'Expert';
   spotifyTrackId: string | null;
   qrPayload: string;
@@ -31,7 +30,6 @@ export function makeCard(partial: Partial<SeedCard> & Pick<SeedCard, 'id' | 'tit
     year: partial.year ?? 2000,
     spotifyUrl,
     album: partial.album ?? '',
-    genre: partial.genre ?? '',
     difficulty: partial.difficulty ?? 'Original',
     spotifyTrackId: trackId,
     qrPayload: partial.qrPayload ?? spotifyUrl,

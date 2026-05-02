@@ -286,7 +286,6 @@ export class SpotifyApiService {
     const releaseYear = Number.parseInt(releaseDate.slice(0, 4), 10);
     const artistNames = (json.artists ?? []).map((artist) => artist.name ?? '').filter(Boolean);
     const artistIds = (json.artists ?? []).map((artist) => artist.id ?? '').filter(Boolean);
-    const genre = await this.fetchPrimaryArtistGenre(artistIds, accessToken, timeoutMs);
 
     return {
       id: json.id,
@@ -295,7 +294,6 @@ export class SpotifyApiService {
       album: json.album?.name ?? '',
       year: Number.isFinite(releaseYear) ? releaseYear : 2000,
       spotifyUrl: json.external_urls?.spotify ?? `https://open.spotify.com/track/${json.id}`,
-      genre,
     };
   }
 

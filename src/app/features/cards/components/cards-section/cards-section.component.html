@@ -27,9 +27,9 @@
         <button class="btn btn-danger" [disabled]="selectedCount() === 0" (click)="deleteSelected.emit()">
           Delete Selected
         </button>
-        <button class="btn btn-ghost" [disabled]="cardsCount() === 0" (click)="regenerateQr.emit()">
+        <!-- <button class="btn btn-ghost" [disabled]="cardsCount() === 0" (click)="regenerateQr.emit()">
           Rebuild QR (Current Mode)
-        </button>
+        </button> -->
       </div>
 
       <div class="quick-actions-row">
@@ -77,9 +77,6 @@
           </div>
           <div class="chips">
             <span>{{ card.difficulty }}</span>
-            @if (card.genre) {
-              <span>{{ card.genre }}</span>
-            }
           </div>
           <div class="card-actions" (click)="$event.stopPropagation()">
             <button class="btn btn-small" (click)="editCard.emit(card)">Edit</button>

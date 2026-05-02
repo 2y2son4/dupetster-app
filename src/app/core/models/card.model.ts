@@ -14,7 +14,6 @@ export interface MusicCard {
   year: number;
   spotifyUrl: string;
   album: string;
-  genre: string;
   difficulty: Difficulty;
   spotifyTrackId: string | null;
   qrPayload: string;
@@ -28,6 +27,5 @@ export interface CardDraft {
   year: number | null;
   spotifyUrl: string;
   album: string;
-  genre: string;
   difficulty: Difficulty;
 }
