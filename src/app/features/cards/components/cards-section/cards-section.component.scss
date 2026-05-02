@@ -1,0 +1,170 @@
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.toolbar-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-controls input {
+  min-width: 220px;
+}
+
+.quick-actions,
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-actions {
+  margin-top: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  position: relative;
+  padding: 11px;
+  cursor: pointer;
+  border: 2px solid var(--line);
+  border-radius: 0;
+  background: var(--sheet);
+  box-shadow: none;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid #555;
+  border-radius: 0;
+  pointer-events: none;
+}
+
+.card.selected {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.card h3,
+.card p,
+.card .year {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.card .year {
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-size: 1.18rem;
+  margin: 3px 0;
+}
+
+.card p {
+  font-size: 0.98rem;
+  margin: 0;
+}
+
+.split {
+  width: 100%;
+  border-top: 1px dashed var(--line);
+  margin: 9px 0;
+}
+
+.qr-box {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto;
+  border: 1px dashed var(--line);
+  background: var(--panel);
+}
+
+.qr-box img {
+  width: 100%;
+  height: 100%;
+}
+
+.chips {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.chips span {
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 0;
+  padding: 3px 8px;
+}
+
+.card-actions {
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.pager {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: center;
+}
+
+.empty {
+  text-align: center;
+  padding: 28px 0;
+  color: var(--muted);
+}
+
+.file-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-btn input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+  .toolbar-controls input {
+    min-width: 0;
+  }
+}

@@ -6,6 +6,7 @@ import { Component, input, output } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './loader-overlay.component.html',
+  styleUrl: './loader-overlay.component.scss',
 })
 export class LoaderOverlayComponent {
   isBusy = input.required<boolean>();

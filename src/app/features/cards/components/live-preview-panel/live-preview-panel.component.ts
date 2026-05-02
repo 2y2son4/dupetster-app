@@ -8,6 +8,7 @@ import { CardDraft } from '../../../../core/models/card.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './live-preview-panel.component.html',
+  styleUrl: './live-preview-panel.component.scss',
 })
 export class LivePreviewPanelComponent {
   form = input.required<CardDraft>();

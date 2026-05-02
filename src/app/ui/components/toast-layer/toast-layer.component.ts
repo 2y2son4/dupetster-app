@@ -7,6 +7,7 @@ import { ToastMessage } from '../../../core/models/ui.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './toast-layer.component.html',
+  styleUrl: './toast-layer.component.scss',
 })
 export class ToastLayerComponent {
   toasts = input.required<ToastMessage[]>();

@@ -6,6 +6,7 @@ import { Component, input, output } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './confirm-modal.component.html',
+  styleUrl: './confirm-modal.component.scss',
 })
 export class ConfirmModalComponent {
   visible = input.required<boolean>();

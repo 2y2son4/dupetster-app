@@ -1,17 +1,26 @@
 :host,
 app-root {
-  --ink: #111;
-  --muted: #4a4a4a;
-  --line: #111;
-  --panel: #fff;
-  --sheet: #f2f2f2;
-  --brand: #111;
-  --accent: #111;
-  --danger: #111;
+  --white: #fff;
+  --black: #000;
+  --grey: #4a4a4a;
+  --pale-grey: #f2f2f2;
+  --magenta: #cc1084;
+  --main-color: var(--white);
+  --secondary-color: var(--black);
+  --tertiary-color: var(--grey);
+  --ink: var(--secondary-color);
+  --muted: var(--tertiary-color);
+  --line: var(--secondary-color);
+  --panel: var(--main-color);
+  --sheet: var(--pale-grey);
+  --brand: var(--secondary-color);
+  --accent: var(--magenta);
+  --danger: var(--secondary-color);
+  --inverse-ink: var(--main-color);
   display: block;
   min-height: 100vh;
   color: var(--ink);
-  background: #fff;
+  background: var(--main-color);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -25,7 +34,7 @@ app-root {
   border: 2px solid var(--line);
   border-radius: 0;
   color: var(--ink);
-  background: #fff;
+  background: var(--panel);
 }
 
 .hero h1 {
@@ -107,19 +116,19 @@ input,
 textarea,
 select {
   width: 100%;
-  border: 2px solid #111;
+  border: 2px solid var(--line);
   border-radius: 0;
   padding: 8px 10px;
-  background: #fff;
-  color: #111;
+  background: var(--panel);
+  color: var(--ink);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-  outline: 2px solid #111;
+  outline: 2px solid var(--line);
   outline-offset: 1px;
-  border-color: #111;
+  border-color: var(--line);
 }
 
 textarea {
@@ -128,9 +137,7 @@ textarea {
 }
 
 .actions,
-.quick-actions,
-.card-actions,
-.modal-actions {
+.actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
@@ -141,7 +148,7 @@ textarea {
 }
 
 .btn {
-  border: 2px solid #111;
+  border: 2px solid var(--line);
   border-radius: 0;
   padding: 9px 12px;
   cursor: pointer;
@@ -159,9 +166,9 @@ textarea {
 }
 
 .btn-primary {
-  background: #111;
-  border-color: #111;
-  color: #fff;
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--inverse-ink);
   box-shadow: none;
 }
 
@@ -170,9 +177,9 @@ textarea {
 }
 
 .btn-ghost {
-  border-color: #111;
-  background: #fff;
-  color: #111;
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--ink);
 }
 
 .btn-ghost:hover:not(:disabled) {
@@ -180,146 +187,14 @@ textarea {
 }
 
 .btn-danger {
-  border-color: #111;
-  background: #fff;
-  color: #111;
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--ink);
 }
 
 .btn-small {
   font-size: 0.78rem;
   padding: 6px 9px;
-}
-
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.toggle input {
-  width: auto;
-}
-
-.preview-card,
-.card {
-  position: relative;
-  border: 2px solid #111;
-  border-radius: 0;
-  background: var(--sheet);
-  box-shadow: none;
-}
-
-.preview-card::after,
-.card::after {
-  content: '';
-  position: absolute;
-  inset: 7px;
-  border: 1px solid #555;
-  border-radius: 0;
-  pointer-events: none;
-}
-
-.preview-card {
-  min-height: 236px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.preview-card.empty {
-  justify-content: center;
-  color: var(--muted);
-}
-
-.preview-title,
-.preview-year,
-.preview-artist,
-.card h3,
-.card p,
-.card .year {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.preview-title,
-.card h3 {
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  font-weight: 800;
-  font-size: 1rem;
-}
-
-.preview-year,
-.card .year {
-  text-transform: uppercase;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  font-size: 1.18rem;
-  margin: 3px 0;
-}
-
-.preview-artist,
-.card p {
-  font-size: 0.98rem;
-  margin: 0;
-}
-
-.preview-split,
-.split {
-  width: 100%;
-  border-top: 1px dashed #111;
-  margin: 9px 0;
-}
-
-.preview-qr,
-.qr-box {
-  position: relative;
-  z-index: 1;
-  border: 1px dashed #111;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-}
-
-.preview-qr {
-  width: 110px;
-  height: 110px;
-}
-
-.preview-qr img,
-.qr-box img {
-  width: 100%;
-  height: 100%;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.toolbar-controls {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.toolbar-controls input {
-  min-width: 220px;
-}
-
-.quick-actions {
-  margin-top: 12px;
 }
 
 .hint {
@@ -334,188 +209,6 @@ textarea {
   line-height: 1.35;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-}
-
-.card {
-  padding: 11px;
-  cursor: pointer;
-}
-
-.card.selected {
-  outline: 3px solid #111;
-  outline-offset: 2px;
-}
-
-.qr-box {
-  width: 90px;
-  height: 90px;
-  margin: 0 auto;
-}
-
-.chips {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-.chips span {
-  font-size: 0.72rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  border: 1px solid #111;
-  background: #fff;
-  color: #111;
-  border-radius: 0;
-  padding: 3px 8px;
-}
-
-.card-actions {
-  margin-top: 8px;
-  justify-content: center;
-}
-
-.pager {
-  margin-top: 14px;
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  align-items: center;
-}
-
-.empty {
-  text-align: center;
-  padding: 28px 0;
-  color: var(--muted);
-}
-
-.file-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.file-btn input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.modal {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 25;
-}
-
-.modal-content {
-  width: min(420px, 90vw);
-  border: 2px solid var(--line);
-  border-radius: 0;
-  background: var(--panel);
-  padding: 18px;
-}
-
-.modal-content h3 {
-  margin: 0 0 8px;
-}
-
-.toast-layer {
-  position: fixed;
-  top: 14px;
-  right: 14px;
-  z-index: 40;
-  display: grid;
-  gap: 8px;
-}
-
-.toast {
-  min-width: 220px;
-  max-width: 340px;
-  padding: 10px 12px;
-  border: 2px solid #000;
-  border-radius: 0;
-  color: #fff;
-  box-shadow: none;
-}
-
-.toast-body {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.toast-close {
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  line-height: 1;
-  padding: 0;
-  cursor: pointer;
-}
-
-.toast.success {
-  background: #111;
-}
-
-.toast.error {
-  background: #111;
-}
-
-.toast.warning {
-  background: #111;
-}
-
-.toast.info {
-  background: #111;
-}
-
-.loader-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.85);
-  display: grid;
-  place-items: center;
-  z-index: 45;
-}
-
-.loader-card {
-  min-width: 220px;
-  border: 2px solid #111;
-  background: #fff;
-  padding: 16px 18px;
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-}
-
-.loader-card p {
-  margin: 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.loader-spinner {
-  width: 28px;
-  height: 28px;
-  border: 2px solid #111;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -525,10 +218,6 @@ textarea {
 @media (max-width: 1100px) {
   .page {
     grid-template-columns: 1fr;
-  }
-
-  .toolbar-controls input {
-    min-width: 0;
   }
 }
 
@@ -545,50 +234,5 @@ textarea {
 
   .field-row {
     grid-template-columns: 1fr;
-  }
-}
-
-@media print {
-  @page {
-    size: A4 portrait;
-    margin: 0;
-  }
-
-  .hero,
-  .left,
-  .toolbar,
-  .quick-actions,
-  .hint,
-  .grid,
-  .pager,
-  .empty,
-  .toast-layer,
-  .loader-overlay,
-  .modal {
-    display: none !important;
-  }
-
-  .page,
-  .right,
-  .panel {
-    padding: 0;
-    margin: 0;
-    border: 0;
-    box-shadow: none;
-    background: #fff;
-  }
-
-  .print-sheet {
-    display: block;
-  }
-
-  .sheet-page {
-    page-break-after: always;
-    break-after: page;
-  }
-
-  .sheet-page:last-child {
-    page-break-after: auto;
-    break-after: auto;
   }
 }

@@ -1,0 +1,96 @@
+.preview-panel {
+  display: block;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.toggle input {
+  width: auto;
+}
+
+.preview-card {
+  position: relative;
+  min-height: 236px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid var(--line);
+  border-radius: 0;
+  background: var(--sheet);
+  box-shadow: none;
+}
+
+.preview-card::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid #555;
+  border-radius: 0;
+  pointer-events: none;
+}
+
+.preview-card.empty {
+  justify-content: center;
+  color: var(--muted);
+}
+
+.preview-title,
+.preview-year,
+.preview-artist {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-title {
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.preview-year {
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-size: 1.18rem;
+  margin: 3px 0;
+}
+
+.preview-artist {
+  font-size: 0.98rem;
+  margin: 0;
+}
+
+.preview-split {
+  width: 100%;
+  border-top: 1px dashed var(--line);
+  margin: 9px 0;
+}
+
+.preview-qr {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  border: 1px dashed var(--line);
+  background: var(--panel);
+}
+
+.preview-qr img {
+  width: 100%;
+  height: 100%;
+}

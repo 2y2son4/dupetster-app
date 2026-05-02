@@ -8,6 +8,7 @@ import { Difficulty, MusicCard, QrPayloadMode, SortMode } from '../../../../core
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './cards-section.component.html',
+  styleUrl: './cards-section.component.scss',
 })
 export class CardsSectionComponent {
   filteredCards = input.required<MusicCard[]>();
