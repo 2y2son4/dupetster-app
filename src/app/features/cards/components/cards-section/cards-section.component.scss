@@ -24,7 +24,16 @@
 }
 
 .quick-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-top: 12px;
+}
+
+.quick-actions-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .grid {
@@ -150,16 +159,8 @@
   color: var(--muted);
 }
 
-.file-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.file-btn input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
+.import-input {
+  display: none;
 }
 
 .band {

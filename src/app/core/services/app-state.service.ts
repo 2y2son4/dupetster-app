@@ -234,6 +234,35 @@ export class AppStateService {
     this.#pushToast('Card deleted.', 'success');
   }
 
+  deleteSelectedCards(): void {
+    if (this.selectedCardIds.size === 0) {
+      this.#pushToast('No selected cards to delete.', 'warning');
+      return;
+    }
+
+    const selectedIds = new Set(this.selectedCardIds);
+    const beforeCount = this.cards.length;
+    this.cards = this.cards.filter((card) => !selectedIds.has(card.id));
+    const deletedCount = beforeCount - this.cards.length;
+
+    this.selectedCardIds.clear();
+
+    if (this.cardPendingDelete && selectedIds.has(this.cardPendingDelete.id)) {
+      this.cardPendingDelete = null;
+    }
+
+    if (this.editingCardId !== null && selectedIds.has(this.editingCardId)) {
+      this.resetForm();
+    }
+
+    void this.#persistCards();
+    this.applyFilters();
+    this.#pushToast(
+      `Deleted ${deletedCount} selected card${deletedCount === 1 ? '' : 's'}.`,
+      'success',
+    );
+  }
+
   resetForm(): void {
     this.form = this.#emptyDraft();
     this.editingCardId = null;
@@ -349,7 +378,7 @@ export class AppStateService {
       async () => {
         await this.#withBusy('Exporting PDF...', async () => {
           this.pdfExportService.exportCardsSheetPdf(selected, this.revealYear);
-          this.#pushToast('PDF generated with 4x4 card sheet layout.', 'success');
+          this.#pushToast('PDF generated with 3x3 card sheet layout.', 'success');
         });
       },
     );

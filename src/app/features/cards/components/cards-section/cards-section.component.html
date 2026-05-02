@@ -19,36 +19,48 @@
   </div>
 
   <div class="quick-actions">
-    <button class="btn btn-ghost" [disabled]="filteredCards().length === 0" (click)="toggleSelectAllFiltered.emit()">
-      {{ allFilteredSelected() ? 'Unselect All Filtered' : 'Select All Filtered' }}
-    </button>
-    <button class="btn btn-primary" [disabled]="selectedCount() === 0 || pdfLoading()" (click)="exportPdf.emit()">
-      @if (!pdfLoading()) {
-        Export PDF
-      } @else {
-        Generating...
-      }
-    </button>
+    <div class="quick-actions-row">
+      <button class="btn btn-ghost" [disabled]="filteredCards().length === 0" (click)="toggleSelectAllFiltered.emit()">
+        {{ allFilteredSelected() ? 'Unselect All Filtered' : 'Select All Filtered' }}
+      </button>
+      <button class="btn btn-danger" [disabled]="selectedCount() === 0" (click)="deleteSelected.emit()">
+        Delete Selected
+      </button>
+      <button class="btn btn-ghost" [disabled]="cardsCount() === 0" (click)="regenerateQr.emit()">
+        Rebuild QR (Current Mode)
+      </button>
+    </div>
 
-    <button class="btn btn-ghost" (click)="exportJson.emit()">Export JSON</button>
-    <button class="btn btn-ghost" (click)="exportCsv.emit()">Export CSV</button>
-    <button class="btn btn-ghost" [disabled]="cardsCount() === 0" (click)="regenerateQr.emit()">
-      Rebuild QR (Current Mode)
-    </button>
+    <div class="quick-actions-row">
+      <button class="btn btn-primary" [disabled]="selectedCount() === 0 || pdfLoading()" (click)="exportPdf.emit()">
+        @if (!pdfLoading()) {
+          Export PDF
+        } @else {
+          Generating...
+        }
+      </button>
+      <button class="btn btn-primary" (click)="exportJson.emit()">Export JSON</button>
+      <button class="btn btn-primary" (click)="exportCsv.emit()">Export CSV</button>
+    </div>
 
-    <label class="btn btn-ghost file-btn">
-      Import JSON
-      <input type="file" accept="application/json,.json" (change)="onImportJson($event)" />
-    </label>
+    <div class="quick-actions-row">
+      <button class="btn btn-ghost" type="button" (click)="jsonImportInput.click()">
+        Import JSON
+      </button>
 
-    <label class="btn btn-ghost file-btn">
-      Import CSV
-      <input type="file" accept="text/csv,.csv" (change)="onImportCsv($event)" />
-    </label>
+      <button class="btn btn-ghost" type="button" (click)="csvImportInput.click()">
+        Import CSV
+      </button>
+
+      <input #jsonImportInput class="import-input" type="file" accept="application/json,.json"
+        (change)="onImportJson($event)" />
+      <input #csvImportInput class="import-input" type="file" accept="text/csv,.csv"
+        (change)="onImportCsv($event)" />
+    </div>
   </div>
 
   <p class="hint">
-    Select cards by clicking them. Print and PDF use the selected cards in a 4x4 A4 sheet template.
+    Select cards by clicking them. PDF export uses selected cards in a 3x3 A4 sheet template.
     Current QR mode: <strong>{{ qrModeLabel() }}</strong>.
   </p>
 

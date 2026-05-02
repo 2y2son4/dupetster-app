@@ -31,6 +31,7 @@ export class CardsSectionComponent {
   difficultyFilterChange = output<string>();
   sortModeChange = output<SortMode>();
   toggleSelectAllFiltered = output<void>();
+  deleteSelected = output<void>();
   exportPdf = output<void>();
   exportJson = output<void>();
   exportCsv = output<void>();
