@@ -106,6 +106,21 @@ label {
   color: #555;
 }
 
+.input-with-action {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.input-with-action input {
+  flex: 1;
+}
+
+.input-with-action .btn {
+  white-space: nowrap;
+  align-self: center;
+}
+
 input,
 textarea,
 select,

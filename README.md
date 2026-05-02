@@ -112,7 +112,7 @@ Typical flow:
 3. Use `Select All Filtered` or click individual cards to select
 4. Click `Export PDF` to generate a card sheet ready to print and cut
 
-You can also edit or duplicate existing cards from the card grid.
+You can also edit existing cards from the card grid.
 
 ## QR codes
 

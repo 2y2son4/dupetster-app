@@ -15,8 +15,12 @@ import {
   templateUrl: './card-form-panel.component.html',
 })
 export class CardFormPanelComponent {
+  showSpotifyClientId = false;
+
   form = input.required<CardDraft>();
   editingCardId = input<number | null>(null);
+  spotifyClientId = input('');
+  spotifyConnected = input(false);
   difficulties = input.required<Difficulty[]>();
   qrModes = input.required<QrModeOption[]>();
   qrMode = input.required<QrPayloadMode>();
@@ -24,7 +28,10 @@ export class CardFormPanelComponent {
   spotifyAutofillLoading = input(false);
 
   formChange = output<CardDraft>();
+  spotifyClientIdChange = output<string>();
   qrModeChange = output<QrPayloadMode>();
+  connectSpotify = output<void>();
+  disconnectSpotify = output<void>();
   save = output<void>();
   clear = output<void>();
 
@@ -33,5 +40,9 @@ export class CardFormPanelComponent {
       ...this.form(),
       [key]: value,
     });
+  }
+
+  toggleSpotifyClientIdVisibility(): void {
+    this.showSpotifyClientId = !this.showSpotifyClientId;
   }
 }
