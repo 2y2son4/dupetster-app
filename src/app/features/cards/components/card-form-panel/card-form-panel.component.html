@@ -6,6 +6,9 @@
     <input id="spotify" type="url" [ngModel]="form().spotifyUrl"
       (ngModelChange)="onFieldChange('spotifyUrl', $event)" />
     <small class="field-help">Detected track ID: {{ detectedTrackId() }}</small>
+    <small class="field-help">
+      <b>Tip:</b> paste a valid Spotify track URL to auto-populate artist, song title, and year.
+    </small>
     @if (spotifyAutofillLoading()) {
       <small class="field-help">Fetching track metadata from Spotify...</small>
     }

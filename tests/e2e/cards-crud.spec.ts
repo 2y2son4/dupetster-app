@@ -23,7 +23,7 @@ test.describe('cards crud', { tag: ['@card-management', '@CRUD', '@actions'] }, 
     await page.getByRole('button', { name: 'Update Card' }).click();
 
     await expect(
-      page.locator('.grid .card', { hasText: 'Seed Song 2' }).locator('p'),
+      page.locator('.grid .card', { hasText: 'Seed Song 2' }).locator('h3'),
     ).toContainText('Edited Artist', { timeout: 30000 });
     await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
       timeout: 5000,
@@ -66,6 +66,8 @@ test.describe('cards crud', { tag: ['@card-management', '@CRUD', '@actions'] }, 
 
     await page.locator('.grid .card', { hasText: 'Seed Song 1' }).first().click();
     await page.getByRole('button', { name: 'Delete Selected' }).click();
+    await expect(page.locator('.modal')).toBeVisible();
+    await page.locator('.modal').getByRole('button', { name: 'Delete' }).click();
 
     await expect(page.locator('.grid .card', { hasText: 'Seed Song 1' })).toHaveCount(0);
     await expect(page.locator('.grid .card', { hasText: 'Seed Song 2' })).toHaveCount(1);

@@ -62,6 +62,8 @@ test.describe('UI behaviors', { tag: ['@ui-behaviors', '@preview', '@regression'
 
     await targetCard.click();
     await page.getByRole('button', { name: 'Delete Selected' }).click();
+    await expect(page.locator('.modal')).toBeVisible();
+    await page.locator('.modal').getByRole('button', { name: 'Delete' }).click();
 
     await expect(page.getByRole('heading', { name: 'Create Card' })).toBeVisible();
     await expect(page.getByLabel('Song title *')).toHaveValue('');

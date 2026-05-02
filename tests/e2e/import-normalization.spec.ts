@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { resetStorage } from './helpers/storage';
+import { STORAGE_KEY } from './helpers/storage';
 import { spotifyTrackUrl } from './helpers/form';
 
 test.describe('import normalization', { tag: ['@import', '@normalization', '@file-io'] }, () => {
@@ -42,12 +43,12 @@ test.describe('import normalization', { tag: ['@import', '@normalization', '@fil
     await expect(page.getByText('Imported 2 cards from JSON.')).toBeVisible();
     await expect(page.locator('.grid .card')).toHaveCount(2);
 
-    const storedCards = await page.evaluate(() => {
-      return JSON.parse(localStorage.getItem('dupetster_cards') ?? '[]') as Array<{
+    const storedCards = await page.evaluate((storageKey: string) => {
+      return JSON.parse(localStorage.getItem(storageKey) ?? '[]') as Array<{
         title: string;
         difficulty: string;
       }>;
-    });
+    }, STORAGE_KEY);
 
     const firstImported = storedCards.find((c) => c.title === 'Imported Json 1');
     const secondImported = storedCards.find((c) => c.title === 'Imported Json 2');
@@ -75,12 +76,12 @@ test.describe('import normalization', { tag: ['@import', '@normalization', '@fil
     await expect(page.getByText('Imported 2 cards from CSV.')).toBeVisible();
     await expect(page.locator('.grid .card')).toHaveCount(2);
 
-    const storedCards = await page.evaluate(() => {
-      return JSON.parse(localStorage.getItem('dupetster_cards') ?? '[]') as Array<{
+    const storedCards = await page.evaluate((storageKey: string) => {
+      return JSON.parse(localStorage.getItem(storageKey) ?? '[]') as Array<{
         title: string;
         difficulty: string;
       }>;
-    });
+    }, STORAGE_KEY);
 
     const firstImported = storedCards.find((c) => c.title === 'Csv Song 1');
     const secondImported = storedCards.find((c) => c.title === 'Csv Song 2');

@@ -25,7 +25,8 @@ test.describe('app smoke', { tag: ['@smoke', '@form-flow', '@localStorage'] }, (
     await page.getByRole('button', { name: 'Add Card' }).click();
 
     await expect(page.locator('.grid .card')).toHaveCount(1, { timeout: 30000 });
-    await expect(page.locator('.grid .card h3')).toContainText('Playwright Song');
+    await expect(page.locator('.grid .card h3')).toContainText('Playwright Artist');
+    await expect(page.locator('.grid .card p')).toContainText('Playwright Song');
     await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
       timeout: 5000,
     });
@@ -38,9 +39,11 @@ test.describe('app smoke', { tag: ['@smoke', '@form-flow', '@localStorage'] }, (
     await seedCards(page, cards);
 
     await page.goto('/');
-    await expect(page.locator('.grid .card h3')).toContainText('Persisted Song');
+    await expect(page.locator('.grid .card h3')).toContainText('Persisted Artist');
+    await expect(page.locator('.grid .card p')).toContainText('Persisted Song');
 
     await page.reload();
-    await expect(page.locator('.grid .card h3')).toContainText('Persisted Song');
+    await expect(page.locator('.grid .card h3')).toContainText('Persisted Artist');
+    await expect(page.locator('.grid .card p')).toContainText('Persisted Song');
   });
 });

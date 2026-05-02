@@ -21,11 +21,12 @@ test.describe(
       const searchInput = page.getByPlaceholder('Search title or artist');
       await searchInput.fill('zed');
       await expect(page.locator('.grid .card')).toHaveCount(1);
-      await expect(page.locator('.grid .card h3')).toContainText('Beta Song');
+      await expect(page.locator('.grid .card h3')).toContainText('Zed Artist');
+      await expect(page.locator('.grid .card p')).toContainText('Beta Song');
 
       await searchInput.fill('gamma');
       await expect(page.locator('.grid .card')).toHaveCount(1);
-      await expect(page.locator('.grid .card h3')).toContainText('Gamma Track');
+      await expect(page.locator('.grid .card p')).toContainText('Gamma Track');
     });
 
     test('filters by difficulty and sorts by title/year', async ({ page }) => {
@@ -45,7 +46,7 @@ test.describe(
       await expect(page.locator('.grid .card')).toHaveCount(2);
 
       await sortFilter.selectOption('title');
-      const titleOrdered = await page.locator('.grid .card h3').allTextContents();
+      const titleOrdered = await page.locator('.grid .card p').allTextContents();
       await expect(titleOrdered[0]?.trim()).toBe('Alpha');
       await expect(titleOrdered[1]?.trim()).toBe('Mike');
 

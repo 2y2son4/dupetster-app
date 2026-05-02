@@ -46,6 +46,7 @@ export class AppStateService {
   form: CardDraft = this.#emptyDraft();
   editingCardId: number | null = null;
   cardPendingDelete: MusicCard | null = null;
+  selectedDeletePendingCount = 0;
 
   searchQuery = '';
   difficultyFilter = '';
@@ -224,22 +225,54 @@ export class AppStateService {
     this.cardPendingDelete = card;
   }
 
-  cancelDelete(): void {
-    this.cardPendingDelete = null;
-  }
-
-  confirmDelete(): void {
-    if (!this.cardPendingDelete) {
+  askDeleteSelected(): void {
+    if (this.selectedCardIds.size === 0) {
+      this.#pushToast('No selected cards to delete.', 'warning');
       return;
     }
 
-    const id = this.cardPendingDelete.id;
-    this.cards = this.cards.filter((card) => card.id !== id);
-    this.selectedCardIds.delete(id);
+    this.selectedDeletePendingCount = this.selectedCardIds.size;
+  }
+
+  get isDeleteModalVisible(): boolean {
+    return !!this.cardPendingDelete || this.selectedDeletePendingCount > 0;
+  }
+
+  get deleteModalTitle(): string {
+    return this.cardPendingDelete ? 'Delete card' : 'Delete selected cards';
+  }
+
+  get deleteModalMessage(): string {
+    if (this.cardPendingDelete) {
+      return 'Are you sure you want to remove this card?';
+    }
+
+    const count = this.selectedDeletePendingCount;
+    return `Are you sure you want to remove ${count} selected card${count === 1 ? '' : 's'}?`;
+  }
+
+  cancelDelete(): void {
     this.cardPendingDelete = null;
-    void this.#persistCards();
-    this.applyFilters();
-    this.#pushToast('Card deleted.', 'success');
+    this.selectedDeletePendingCount = 0;
+  }
+
+  confirmDelete(): void {
+    if (this.cardPendingDelete) {
+      const id = this.cardPendingDelete.id;
+      this.cards = this.cards.filter((card) => card.id !== id);
+      this.selectedCardIds.delete(id);
+      this.cardPendingDelete = null;
+      this.selectedDeletePendingCount = 0;
+      void this.#persistCards();
+      this.applyFilters();
+      this.#pushToast('Card deleted.', 'success');
+      return;
+    }
+
+    if (this.selectedDeletePendingCount > 0) {
+      this.selectedDeletePendingCount = 0;
+      this.deleteSelectedCards();
+    }
   }
 
   deleteSelectedCards(): void {
