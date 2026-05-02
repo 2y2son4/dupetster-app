@@ -210,6 +210,26 @@ textarea {
   line-height: 1.35;
 }
 
+.page-footer {
+  margin: 0 20px 8px;
+  padding: 14px 18px;
+  border: 2px solid var(--line);
+  border-radius: 0;
+  color: var(--muted);
+  background: var(--panel);
+  text-align: center;
+  font-size: 0.82rem;
+}
+
+a::selection, a {
+  color: var(--ink);
+}
+
+a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

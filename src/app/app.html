@@ -3,8 +3,8 @@
 <app-loader-overlay [isBusy]="state.isBusy()" [busyMessage]="state.busyMessage()"
   (dismiss)="state.dismissLoader()"></app-loader-overlay>
 
-<app-confirm-modal [visible]="!!state.cardPendingDelete" title="Delete card"
-  message="Are you sure you want to remove this card?" confirmLabel="Delete" (cancel)="state.cancelDelete()"
+<app-confirm-modal [visible]="state.isDeleteModalVisible" [title]="state.deleteModalTitle"
+  [message]="state.deleteModalMessage" confirmLabel="Delete" (cancel)="state.cancelDelete()"
   (confirm)="state.confirmDelete()"></app-confirm-modal>
 
 <header class="hero">
@@ -47,7 +47,7 @@
     [currentPage]="state.currentPage" [qrModeLabel]="state.getQrModeLabel(state.qrMode)"
     (searchQueryChange)="state.onSearchQueryChange($event)"
     (difficultyFilterChange)="state.onDifficultyFilterChange($event)" (sortModeChange)="state.onSortModeChange($event)"
-    (toggleSelectAllFiltered)="state.toggleSelectAllFiltered()" (deleteSelected)="state.deleteSelectedCards()"
+    (toggleSelectAllFiltered)="state.toggleSelectAllFiltered()" (deleteSelected)="state.askDeleteSelected()"
     (exportPdf)="state.exportPdf()" (exportJson)="state.exportJson()" (exportCsv)="state.exportCsv()"
     (regenerateQr)="state.regenerateQrForAllCards()" (importJson)="state.onImportJson($event)"
     (importCsv)="state.onImportCsv($event)" (toggleSelect)="state.toggleSelect($event)"
@@ -56,6 +56,6 @@
 </main>
 <footer class="page-footer">
   <p>
-    Made by <a href="https://github.com/2y2son4" target="_blank" rel="noopener noreferrer">2y2son4</a> and robots
+    Made by <a href="https://github.com/2y2son4" target="_blank" rel="noopener noreferrer"><b>2y2son4</b></a> and robots
   </p>
 </footer>
