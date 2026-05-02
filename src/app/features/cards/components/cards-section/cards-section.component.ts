@@ -12,7 +12,6 @@ import { Difficulty, MusicCard, QrPayloadMode, SortMode } from '../../../../core
 export class CardsSectionComponent {
   filteredCards = input.required<MusicCard[]>();
   pagedCards = input.required<MusicCard[]>();
-  selectedPages = input.required<MusicCard[][]>();
   selectedCardIds = input.required<Set<number>>();
   difficulties = input.required<Difficulty[]>();
   searchQuery = input.required<string>();
@@ -32,7 +31,6 @@ export class CardsSectionComponent {
   sortModeChange = output<SortMode>();
   toggleSelectAllFiltered = output<void>();
   exportPdf = output<void>();
-  printSelected = output<void>();
   exportJson = output<void>();
   exportCsv = output<void>();
   regenerateQr = output<void>();

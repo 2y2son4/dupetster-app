@@ -53,7 +53,7 @@ export class AppStateService {
   currentPage = 1;
   revealYear = true;
   pdfLoading = signal(false);
-  qrMode: QrPayloadMode = 'canonical-url';
+  qrMode: QrPayloadMode = 'raw-url';
   spotifyClientId = '';
   spotifyClientSecret = '';
   spotifyPlaylistInput = '';
@@ -127,19 +127,6 @@ export class AppStateService {
     return this.cards.filter((card) => this.selectedCardIds.has(card.id));
   }
 
-  get selectedPages(): MusicCard[][] {
-    const source = [...this.selectedCards];
-    const pages: MusicCard[][] = [];
-    const slotsPerPage = 16;
-
-    for (let i = 0; i < source.length; i += slotsPerPage) {
-      const page = source.slice(i, i + slotsPerPage);
-      pages.push(page);
-    }
-
-    return pages;
-  }
-
   async saveOrUpdateCard(): Promise<void> {
     if (!this.validateForm()) {
       return;
@@ -210,7 +197,7 @@ export class AppStateService {
       genre: card.genre,
       difficulty: card.difficulty,
     };
-    this.qrMode = card.qrMode ?? 'canonical-url';
+    this.qrMode = 'raw-url';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -366,15 +353,6 @@ export class AppStateService {
         });
       },
     );
-  }
-
-  printSelected(): void {
-    if (this.selectedCards.length === 0) {
-      this.pushToast('Select at least one card to print.', 'error');
-      return;
-    }
-
-    window.print();
   }
 
   async regenerateQrForAllCards(): Promise<void> {
