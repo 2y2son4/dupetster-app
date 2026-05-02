@@ -13,8 +13,8 @@ export class PdfExportService {
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageWidth = 210;
     const pageHeight = 297;
-    const cols = 4;
-    const rows = 4;
+    const cols = 3;
+    const rows = 3;
     const cardWidth = pageWidth / cols;
     const cardHeight = pageHeight / rows;
     const qrSize = 24;
