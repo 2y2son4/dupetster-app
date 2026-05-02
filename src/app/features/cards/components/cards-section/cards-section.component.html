@@ -1,6 +1,6 @@
 <section class="right panel">
   <div class="toolbar">
-    <h2>Cards ({{ filteredCards().length }})</h2>
+    <h2>Cards ({{ selectedCount() }}/{{ filteredCards().length }})</h2>
     <div class="toolbar-controls">
       <input type="text" placeholder="Search title or artist" [ngModel]="searchQuery()"
         (ngModelChange)="searchQueryChange.emit($event)" />
@@ -56,9 +56,9 @@
     <div class="grid">
       @for (card of pagedCards(); track card.id) {
         <article class="card" [class.selected]="isSelected(card.id)" (click)="toggleSelect.emit(card.id)">
-          <h3>{{ card.title }}</h3>
-          <div class="year">{{ revealYear() ? card.year : 'YEAR' }}</div>
+          <h3 class="band">{{ card.title }}</h3>
           <p>{{ card.artist }}</p>
+          <div class="year">{{ revealYear() ? card.year : 'YEAR' }}</div>
           <div class="split"></div>
           <div class="qr-box">
             <img [src]="card.qrDataUrl" alt="Card QR" />
