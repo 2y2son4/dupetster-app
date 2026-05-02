@@ -51,20 +51,19 @@
   </section>
 
   <app-cards-section [filteredCards]="state.filteredCards" [pagedCards]="state.pagedCards"
-    [selectedCardIds]="state.selectedCardIds" [difficulties]="state.difficulties"
-    [searchQuery]="state.searchQuery" [difficultyFilter]="state.difficultyFilter" [sortMode]="state.sortMode"
-    [selectedCount]="state.selectedCount" [allFilteredSelected]="state.allFilteredSelected"
-    [cardsCount]="state.cards.length" [pdfLoading]="state.pdfLoading()" [revealYear]="state.revealYear"
-    [totalPages]="state.totalPages" [currentPage]="state.currentPage" [qrModeLabel]="state.getQrModeLabel(state.qrMode)"
+    [selectedCardIds]="state.selectedCardIds" [difficulties]="state.difficulties" [searchQuery]="state.searchQuery"
+    [difficultyFilter]="state.difficultyFilter" [sortMode]="state.sortMode" [selectedCount]="state.selectedCount"
+    [allFilteredSelected]="state.allFilteredSelected" [cardsCount]="state.cards.length"
+    [pdfLoading]="state.pdfLoading()" [revealYear]="state.revealYear" [totalPages]="state.totalPages"
+    [currentPage]="state.currentPage" [qrModeLabel]="state.getQrModeLabel(state.qrMode)"
     (searchQueryChange)="state.onSearchQueryChange($event)"
     (difficultyFilterChange)="state.onDifficultyFilterChange($event)" (sortModeChange)="state.onSortModeChange($event)"
     (toggleSelectAllFiltered)="state.toggleSelectAllFiltered()" (exportPdf)="state.exportPdf()"
-    (exportJson)="state.exportJson()" (exportCsv)="state.exportCsv()"
-    (regenerateQr)="state.regenerateQrForAllCards()" (importJson)="state.onImportJson($event)"
-    (importCsv)="state.onImportCsv($event)" (toggleSelect)="state.toggleSelect($event)"
-    (editCard)="state.editCard($event)" (duplicateCard)="state.duplicateCard($event)"
-    (deleteCard)="state.askDelete($event)" (previousPage)="state.previousPage()"
-    (nextPage)="state.nextPage()"></app-cards-section>
+    (exportJson)="state.exportJson()" (exportCsv)="state.exportCsv()" (regenerateQr)="state.regenerateQrForAllCards()"
+    (importJson)="state.onImportJson($event)" (importCsv)="state.onImportCsv($event)"
+    (toggleSelect)="state.toggleSelect($event)" (editCard)="state.editCard($event)"
+    (duplicateCard)="state.duplicateCard($event)" (deleteCard)="state.askDelete($event)"
+    (previousPage)="state.previousPage()" (nextPage)="state.nextPage()"></app-cards-section>
 </main>
 <footer class="page-footer">
   <p>
