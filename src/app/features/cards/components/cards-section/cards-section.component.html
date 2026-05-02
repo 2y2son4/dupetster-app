@@ -83,7 +83,6 @@
           </div>
           <div class="card-actions" (click)="$event.stopPropagation()">
             <button class="btn btn-small" (click)="editCard.emit(card)">Edit</button>
-            <button class="btn btn-small" (click)="duplicateCard.emit(card)">Duplicate</button>
             <button class="btn btn-small btn-danger" (click)="deleteCard.emit(card)">Delete</button>
           </div>
         </article>

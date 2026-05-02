@@ -1,0 +1,129 @@
+name: Release App
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (example: v1.2.3)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag ||
+    github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.resolve-tag.outputs.release_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release tag
+        id: resolve-tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "release_tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate tag format for manual dispatch
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          TAG="${{ steps.resolve-tag.outputs.release_tag }}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-+].*)?$ ]]; then
+            echo "Tag '$TAG' must follow semver format like v1.2.3"
+            exit 1
+          fi
+
+  quality:
+    needs: prepare-tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e tests (Chromium)
+        run: npm run e2e:ci
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ needs.prepare-tag.outputs.release_tag }}
+          path: playwright-report
+
+  build-and-package:
+    needs: [ prepare-tag, quality ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production app
+        run: npm run build -- --configuration production
+
+      - name: Prepare release bundles
+        run: |
+          TAG="${{ needs.prepare-tag.outputs.release_tag }}"
+          mkdir -p release
+          zip -r "release/dupetster-app-${TAG}.zip" "dist/dupetster-app/browser"
+          tar -czf "release/dupetster-app-${TAG}.tar.gz" -C dist/dupetster-app/browser .
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          path: release/*
+
+  publish-release:
+    needs: [ prepare-tag, build-and-package ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+          path: release
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare-tag.outputs.release_tag }}
+          generate_release_notes: true
+          files: |
+            release/*.zip
+            release/*.tar.gz
