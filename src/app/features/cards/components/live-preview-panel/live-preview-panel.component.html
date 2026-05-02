@@ -7,16 +7,21 @@
 
   <div class="preview-card" [class.empty]="!form().title">
     @if (form().title) {
-      <div class="preview-title">{{ form().title }}</div>
-      <div class="preview-year">{{ revealYear() ? form().year : 'YEAR' }}</div>
-      <div class="preview-artist">{{ form().artist }}</div>
+      <div class="preview-upper">
+        <div class="preview-artist">{{ form().artist }}</div>
+        <div class="preview-title">{{ form().title }}</div>
+        <div class="preview-year">{{ revealYear() ? form().year : 'YEAR' }}</div>
+      </div>
       <div class="preview-split"></div>
-      <div class="preview-qr">
-        @if (previewQr()) {
-          <img [src]="previewQr()" alt="QR preview" />
-        } @else {
-          <span>QR</span>
-        }
+      <div class="preview-lower">
+        <div class="preview-difficulty">{{ form().difficulty }}</div>
+        <div class="preview-qr">
+          @if (previewQr()) {
+            <img [src]="previewQr()" alt="QR preview" />
+          } @else {
+            <span>QR</span>
+          }
+        </div>
       </div>
     } @else {
       <p>Fill required fields to preview the card.</p>
