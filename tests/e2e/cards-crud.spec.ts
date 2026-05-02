@@ -55,3 +55,18 @@ test('duplicates a card and deletes with confirmation modal', async ({ page }) =
 
   await expect(page.locator('.grid .card', { hasText: 'Seed Song 2' })).toHaveCount(0);
 });
+
+test('deletes selected cards using global delete button', async ({ page }) => {
+  await seedCards(page, [
+    makeCard({ id: 1, title: 'Seed Song 1', artist: 'Seed Artist 1', year: 2001 }),
+    makeCard({ id: 2, title: 'Seed Song 2', artist: 'Seed Artist 2', year: 2002 }),
+  ]);
+
+  await page.goto('/');
+
+  await page.locator('.grid .card', { hasText: 'Seed Song 1' }).first().click();
+  await page.getByRole('button', { name: 'Delete Selected' }).click();
+
+  await expect(page.locator('.grid .card', { hasText: 'Seed Song 1' })).toHaveCount(0);
+  await expect(page.locator('.grid .card', { hasText: 'Seed Song 2' })).toHaveCount(1);
+});

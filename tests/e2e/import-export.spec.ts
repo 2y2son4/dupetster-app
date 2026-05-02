@@ -36,14 +36,47 @@ test('starts JSON and CSV import flows from fixture files', async ({ page }) => 
   const dismissLoader = page.getByRole('button', { name: 'Dismiss Loader' });
 
   await page
-    .locator('label.file-btn:has-text("Import JSON") input[type="file"]')
+    .locator('input.import-input[accept="application/json,.json"]')
     .setInputFiles('tests/e2e/fixtures/import-cards.json');
   await expect(dismissLoader).not.toBeVisible({ timeout: 5000 });
 
   await page
-    .locator('label.file-btn:has-text("Import CSV") input[type="file"]')
+    .locator('input.import-input[accept="text/csv,.csv"]')
     .setInputFiles('tests/e2e/fixtures/import-cards.csv');
   await expect(dismissLoader).not.toBeVisible({ timeout: 5000 });
 
   await expect(page.getByRole('heading', { name: 'Dupetster' })).toBeVisible();
+});
+
+test('rebuild QR updates cards using current mode', async ({ page }) => {
+  await seedCards(page, [
+    makeCard({
+      id: 1,
+      title: 'Seed Song 1',
+      spotifyUrl: 'https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V',
+      qrMode: 'canonical-url',
+      qrPayload: 'https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V?si=old',
+    }),
+  ]);
+  await page.goto('/');
+
+  await page.getByRole('button', { name: 'Rebuild QR (Current Mode)' }).click();
+
+  await expect(
+    page.getByText('Regenerated 1 cards using Raw URL mode (exact URL entered).'),
+  ).toBeVisible({ timeout: 15000 });
+
+  const storedCards = await page.evaluate(() => {
+    const raw = localStorage.getItem('dupetster_cards_v2');
+    if (!raw) {
+      return [] as Array<{ qrMode: string; qrPayload: string }>;
+    }
+    return JSON.parse(raw) as Array<{ qrMode: string; qrPayload: string }>;
+  });
+
+  await expect(storedCards).toHaveLength(1);
+  await expect(storedCards[0]?.qrMode).toBe('raw-url');
+  await expect(storedCards[0]?.qrPayload).toBe(
+    'https://open.spotify.com/track/2TpxZ7JUBn3uw46aR7qd6V',
+  );
 });
