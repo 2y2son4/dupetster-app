@@ -19,10 +19,10 @@ test.describe('card validation', { tag: ['@validation', '@form-errors', '@regres
   test('shows validation error when year is out of range', async ({ page }) => {
     await page.goto('/');
 
-    await fillRequiredCardForm(page, { year: '1800' });
+    await fillRequiredCardForm(page, { year: '1299' });
     await page.getByRole('button', { name: 'Add Card' }).click();
 
-    await expect(page.getByText('Release year must be between 1900 and 2100.')).toBeVisible();
+    await expect(page.getByText(`Release year must be between 1400 and ${new Date().getFullYear()}.`)).toBeVisible();
     await expect(page.locator('.grid .card')).toHaveCount(0);
   });
 
