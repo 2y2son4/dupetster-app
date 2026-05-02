@@ -65,6 +65,14 @@
     Current QR mode: <strong>{{ qrModeLabel() }}</strong>.
   </p>
 
+  @if (totalPages() > 1) {
+    <div class="pager">
+      <button class="btn btn-ghost" [disabled]="currentPage() === 1" (click)="previousPage.emit()">Previous</button>
+      <span>Page {{ currentPage() }} / {{ totalPages() }}</span>
+      <button class="btn btn-ghost" [disabled]="currentPage() === totalPages()" (click)="nextPage.emit()">Next</button>
+    </div>
+  }
+
   @if (pagedCards().length > 0) {
     <div class="grid">
       @for (card of pagedCards(); track card.id) {
@@ -90,14 +98,6 @@
     <div class="empty">
       <h3>No cards yet</h3>
       <p>Create a card or import CSV/JSON.</p>
-    </div>
-  }
-
-  @if (totalPages() > 1) {
-    <div class="pager">
-      <button class="btn btn-ghost" [disabled]="currentPage() === 1" (click)="previousPage.emit()">Previous</button>
-      <span>Page {{ currentPage() }} / {{ totalPages() }}</span>
-      <button class="btn btn-ghost" [disabled]="currentPage() === totalPages()" (click)="nextPage.emit()">Next</button>
     </div>
   }
 
