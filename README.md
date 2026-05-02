@@ -145,7 +145,6 @@ Minimal accepted example:
     "artist": "Michael Jackson",
     "year": 1983,
     "spotifyUrl": "https://open.spotify.com/track/id-string",
-    "album": "Thriller",
     "difficulty": "Original"
   }
 ]
@@ -153,7 +152,6 @@ Minimal accepted example:
 
 Optional fields:
 
-- `album`
 - `difficulty` (`Original`, `Pro`, `Expert`)
 - `spotifyTrackId`
 - `qrPayload`
