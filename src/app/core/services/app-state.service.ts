@@ -203,7 +203,6 @@ export class AppStateService {
       artist: card.artist,
       year: card.year,
       spotifyUrl: card.spotifyUrl,
-      album: card.album,
       difficulty: card.difficulty,
     };
     this.qrMode = 'raw-url';
@@ -819,7 +818,6 @@ export class AppStateService {
           spotifyTrackId: card.spotifyTrackId ?? '',
           qrPayload: card.qrPayload,
           qrMode: card.qrMode,
-          album: card.album,
           difficulty: card.difficulty,
         })),
         this.#buildExportFilename('dupetster-cards', 'csv'),
@@ -899,7 +897,6 @@ export class AppStateService {
             spotifyTrackId: row['spotifyTrackId'] ?? null,
             qrPayload: row['qrPayload'] ?? '',
             qrMode: (row['qrMode'] as QrPayloadMode) ?? 'canonical-url',
-            album: row['album'] ?? '',
             difficulty: (row['difficulty'] as Difficulty) ?? 'Original',
           }),
         );
@@ -954,7 +951,6 @@ export class AppStateService {
       artist: '',
       year: null,
       spotifyUrl: '',
-      album: '',
       difficulty: 'Original',
     };
   }
@@ -964,7 +960,6 @@ export class AppStateService {
     artist: string;
     year: number;
     spotifyUrl: string;
-    album: string;
     difficulty: Difficulty;
   } {
     return {
@@ -972,7 +967,6 @@ export class AppStateService {
       artist: this.form.artist.trim(),
       year: Number(this.form.year),
       spotifyUrl: this.form.spotifyUrl.trim(),
-      album: this.form.album.trim(),
       difficulty: this.form.difficulty,
     };
   }
@@ -1032,7 +1026,6 @@ export class AppStateService {
         spotifyTrackId: qrInfo.trackId,
         qrPayload: qrInfo.payload,
         qrMode: importedMode,
-        album: String(row.album ?? ''),
         difficulty: this.#normalizeDifficulty(row.difficulty),
         qrDataUrl,
       });
@@ -1088,7 +1081,6 @@ export class AppStateService {
                 artist: track.artists.join(', '),
                 year: track.year,
                 spotifyUrl: canonicalUrl,
-                album: track.album,
                 difficulty: this.spotifyImportDifficulty,
                 spotifyTrackId: track.id,
                 qrPayload: qrInfo.payload,
@@ -1666,7 +1658,6 @@ export class AppStateService {
           artist: details.artists.join(', ') || this.form.artist,
           year: details.year || this.form.year,
           spotifyUrl: details.spotifyUrl || this.form.spotifyUrl,
-          album: details.album || this.form.album,
         };
       });
 

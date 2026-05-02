@@ -1,2 +1,2 @@
-title,artist,year,spotifyUrl,album,difficulty
-Imported CSV Song,Imported CSV Artist,2019,https://open.spotify.com/track/3n3Ppam7vgaVa1iaRUc9Lp,CSV Album,Pop,Expert
+title,artist,year,spotifyUrl,difficulty
+Imported CSV Song,Imported CSV Artist,2019,https://open.spotify.com/track/3n3Ppam7vgaVa1iaRUc9Lp,Expert

@@ -2,7 +2,6 @@ export interface SpotifyPlaylistTrack {
   id: string;
   name: string;
   artists: string[];
-  album: string;
   year: number;
   spotifyUrl: string;
 }

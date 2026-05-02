@@ -2,14 +2,14 @@
 
 Dupetster is a music card game app inspired by Hitster. Create, manage, and export QR-coded music cards for gameplay.
 
-Main use case: add cards manually or via JSON import, select cards, and export a PDF card sheet ready to cut.
+Main use case: add cards manually or via JSON/CSV import, select cards, and export printable assets.
 
 ## Project architecture
 
 The app follows a clean Angular standalone structure:
 
 - `app.ts` — container/orchestrator component
-- `features/**/components` — presentational UI components, each with its own SCSS file
+- `features/**/components` — presentational UI components (most styles are centralized in `app.scss`)
 - `ui/components` — reusable shell widgets (toast, loader, modal), each with its own SCSS file
 - `core/models` — domain types and contracts
 - `core/services` — business logic and state (`AppStateService`, `PdfExportService`, etc.)
@@ -107,12 +107,21 @@ The app runs at `http://localhost:4200/`.
 
 Typical flow:
 
-1. Add cards manually via the form, or import from a JSON file
+1. Add cards manually via the form, or import from JSON/CSV
 2. Review cards in the `Cards (N)` section
 3. Use `Select All Filtered` or click individual cards to select
-4. Click `Export PDF` to generate a card sheet ready to print and cut
+4. Use `Delete Selected` to remove many cards at once (with confirmation)
+5. Export:
 
-You can also edit existing cards from the card grid.
+- `Export PDF` for printable cards
+- `Export JSON` / `Export CSV` for data backup and transfer
+
+You can also edit and delete individual cards from the grid.
+
+Notes:
+
+- Duplicate cards are blocked when adding/importing by Spotify URL.
+- Exported filenames include a timestamp suffix for uniqueness.
 
 ## QR codes
 
@@ -120,15 +129,26 @@ All cards use `raw-url` QR mode. Each card's QR code encodes its Spotify URL dir
 
 ## PDF export
 
-Exports a multi-page PDF with a 4×2 card grid per page. Each card includes:
+Exports a multi-page PDF with a 3×3 card grid per page. Each card includes:
 
 - Title, artist, year
 - A solid-bordered QR code box
 - A dashed divider line separating card info from the QR area
 
-## JSON import format
+## Spotify autofill and login
 
-You can import cards with `Import JSON` using an array of objects.
+The card form includes a `Spotify Client ID` field and `Connect Spotify` button.
+
+- Client ID field is masked by default and has a show/hide toggle.
+- `Connect Spotify` is disabled until Client ID is filled.
+- After connecting, pasting a valid Spotify track URL can auto-populate artist, title, and year.
+- In Spotify app development mode, test users must be added in Spotify Dashboard User Management.
+
+## JSON/CSV import format
+
+You can import cards with `Import JSON` or `Import CSV`.
+
+For JSON, use an array of objects.
 
 Minimal accepted example:
 
@@ -150,68 +170,17 @@ Minimal accepted example:
 ]
 ```
 
-Optional fields:
+Optional JSON fields:
 
 - `difficulty` (`Original`, `Pro`, `Expert`)
 - `spotifyTrackId`
 - `qrPayload`
 
-<!--
-## Spotify import (currently disabled)
+Import behavior:
 
-`<app-spotify-import-panel>` is commented out in `app.html`. The Spotify import UI and all related
-flows (OAuth PKCE login, Client Credentials, local proxy) are implemented but not exposed in the UI.
-
-### Supported import modes
-
-1. Spotify Login import (OAuth PKCE — works with public/private playlists)
-2. Legacy Client Credentials import (Client ID + Client Secret)
-3. Local proxy import (credentials stay in `.env.proxy`)
-
-### Recommended flow (Spotify Login)
-
-1. Enter your Spotify Client ID in the app.
-2. Click `Connect Spotify Account`.
-3. Approve access on Spotify.
-4. Back in Dupetster, click `Import Playlist (Spotify Login)`.
-
-### Local proxy
-
-Start the local proxy:
-
-```bash
-npm run start:proxy
-```
-
-Proxy endpoint: `http://127.0.0.1:8787/api/playlist-tracks?playlist=<url-or-id>`
-
-`.env.proxy` example:
-
-```env
-SPOTIFY_CLIENT_ID=your_real_client_id
-SPOTIFY_CLIENT_SECRET=your_real_client_secret
-SPOTIFY_PROXY_PORT=8787
-```
-
-### Spotify Developer Dashboard settings
-
-- App name: `Dupetster`
-- Website: `https://2y2son4.github.io/dupetster-app/`
-- APIs/SDKs: `Web API` and `Android`
-
-Redirect URIs:
-
-- `http://127.0.0.1:4200/callback`
-- `https://2y2son4.github.io/dupetster-app/callback`
-
-Note: Spotify requires explicit loopback IPs for local HTTP redirects. Use `127.0.0.1` (not `localhost`).
-
-### Future Android app notes
-
-1. Add your Android package in Spotify dashboard (e.g. `io.dupetster.app`).
-2. Add an app redirect URI with a custom scheme (e.g. `dupetster://callback`).
-3. Keep Web API selected for playlist metadata requests.
--->
+- Invalid rows are skipped.
+- Difficulty values are normalized.
+- Duplicate Spotify URLs are skipped with toast feedback.
 
 ## Build
 
@@ -219,6 +188,10 @@ Note: Spotify requires explicit loopback IPs for local HTTP redirects. Use `127.
 npm run build
 ```
 
-## Deploy
+## Deploy and releases
 
-This repo includes a GitHub Actions workflow to publish to GitHub Pages on push to `master`.
+This repo includes GitHub Actions workflows for:
+
+- GitHub Pages deployment on push to `master` (`deploy-pages.yml`)
+- Tag-based release artifact publishing (`release.yml`)
+- Manual semver bump + tag creation (`cut-release.yml`)

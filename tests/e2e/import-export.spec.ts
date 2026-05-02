@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import path from 'node:path';
 import { makeCard, resetStorage, seedCards } from './helpers/storage';
 import { STORAGE_KEY } from './helpers/storage';
 
@@ -40,15 +41,15 @@ test.describe('import export', { tag: ['@transfer-flow', '@file-transfer'] }, ()
   test('starts JSON and CSV import flows from fixture files', async ({ page }) => {
     await page.goto('/');
     const dismissLoader = page.getByRole('button', { name: 'Dismiss Loader' });
+    const jsonFixture = path.resolve(__dirname, 'fixtures', 'import-cards.json');
+    const csvFixture = path.resolve(__dirname, 'fixtures', 'import-cards.csv');
 
     await page
       .locator('input.import-input[accept="application/json,.json"]')
-      .setInputFiles('tests/e2e/fixtures/import-cards.json');
+      .setInputFiles(jsonFixture);
     await expect(dismissLoader).not.toBeVisible({ timeout: 5000 });
 
-    await page
-      .locator('input.import-input[accept="text/csv,.csv"]')
-      .setInputFiles('tests/e2e/fixtures/import-cards.csv');
+    await page.locator('input.import-input[accept="text/csv,.csv"]').setInputFiles(csvFixture);
     await expect(dismissLoader).not.toBeVisible({ timeout: 5000 });
 
     await expect(page.getByRole('heading', { name: 'Dupetster' })).toBeVisible();

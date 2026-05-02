@@ -168,7 +168,6 @@ export class SpotifyApiService {
           id: track.id,
           name: track.name,
           artists: (track.artists ?? []).map((artist) => artist.name ?? '').filter(Boolean),
-          album: track.album?.name ?? '',
           year: Number.isFinite(releaseYear) ? releaseYear : 2000,
           spotifyUrl: track.external_urls?.spotify ?? `https://open.spotify.com/track/${track.id}`,
         });
@@ -231,7 +230,6 @@ export class SpotifyApiService {
           id: track.id,
           name: track.name,
           artists: (track.artists ?? []).map((artist) => artist.name ?? '').filter(Boolean),
-          album: track.album?.name ?? '',
           year: Number.isFinite(releaseYear) ? releaseYear : 2000,
           spotifyUrl: track.external_urls?.spotify ?? `https://open.spotify.com/track/${track.id}`,
         });
@@ -291,7 +289,6 @@ export class SpotifyApiService {
       id: json.id,
       name: json.name,
       artists: artistNames,
-      album: json.album?.name ?? '',
       year: Number.isFinite(releaseYear) ? releaseYear : 2000,
       spotifyUrl: json.external_urls?.spotify ?? `https://open.spotify.com/track/${json.id}`,
     };
