@@ -15,7 +15,7 @@ import { AppStateService } from './core/services/app-state.service';
     ConfirmModalComponent,
     CardFormPanelComponent,
     LivePreviewPanelComponent,
-    CardsSectionComponent
+    CardsSectionComponent,
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
