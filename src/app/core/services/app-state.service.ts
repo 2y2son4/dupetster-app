@@ -21,7 +21,7 @@ import { SpotifyApiService } from './spotify-api.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppStateService {
-  readonly storageKey = 'dupetster_cards_v2';
+  readonly storageKey = 'dupetster_cards';
   readonly spotifyImportKey = 'dupetster_spotify_import_v1';
   readonly spotifyAuthKey = 'dupetster_spotify_auth_v1';
   readonly spotifyPkceKey = 'dupetster_spotify_pkce_v1';
@@ -132,7 +132,16 @@ export class AppStateService {
       return;
     }
 
-    const qrInfo = this.#resolveQrPayload(this.form.spotifyUrl, this.qrMode);
+    const normalizedUrl = this.form.spotifyUrl.trim();
+    if (!this.editingCardId) {
+      const isDuplicate = this.cards.some((card) => card.spotifyUrl === normalizedUrl);
+      if (isDuplicate) {
+        this.#pushToast('A card with this Spotify URL already exists.', 'warning');
+        return;
+      }
+    }
+
+    const qrInfo = this.#resolveQrPayload(normalizedUrl, this.qrMode);
     if (!qrInfo.payload) {
       this.#pushToast(
         'Could not parse a Spotify track ID. Use a track URL or spotify:track URI.',
@@ -807,9 +816,7 @@ export class AppStateService {
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
-    const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-    // Use dashes instead of colons because Windows filenames cannot contain ':'.
-    const uniqueId = `${day}-${month}-${year}_${hours}-${minutes}-${seconds}-${milliseconds}`;
+    const uniqueId = `${day}-${month}-${year}_${hours}-${minutes}-${seconds}`;
     return `${baseName}-${uniqueId}.${extension}`;
   }
 
@@ -825,10 +832,21 @@ export class AppStateService {
         const text = await file.text();
         const parsed = JSON.parse(text) as Partial<MusicCard>[];
         const imported = await this.#normalizeImportedCards(parsed);
-        this.cards.push(...imported);
+        const existingUrlsJson = new Set(this.cards.map((c) => c.spotifyUrl));
+        const newCardsJson = imported.filter((c) => !existingUrlsJson.has(c.spotifyUrl));
+        const skippedJson = imported.length - newCardsJson.length;
+        this.cards.push(...newCardsJson);
         await this.#persistCards();
         this.applyFilters();
-        this.#pushToast(`Imported ${imported.length} cards from JSON.`, 'success');
+        if (newCardsJson.length > 0) {
+          const skipNote =
+            skippedJson > 0
+              ? ` Skipped ${skippedJson} duplicate${skippedJson === 1 ? '' : 's'}.`
+              : '';
+          this.#pushToast(`Imported ${newCardsJson.length} cards from JSON.${skipNote}`, 'success');
+        } else {
+          this.#pushToast('No new cards imported (all duplicates).', 'warning');
+        }
       });
     } catch {
       this.#pushToast('Unable to import JSON file.', 'error');
@@ -868,10 +886,19 @@ export class AppStateService {
         );
 
         const imported = await this.#normalizeImportedCards(normalizedSource);
-        this.cards.push(...imported);
+        const existingUrlsCsv = new Set(this.cards.map((c) => c.spotifyUrl));
+        const newCardsCsv = imported.filter((c) => !existingUrlsCsv.has(c.spotifyUrl));
+        const skippedCsv = imported.length - newCardsCsv.length;
+        this.cards.push(...newCardsCsv);
         await this.#persistCards();
         this.applyFilters();
-        this.#pushToast(`Imported ${imported.length} cards from CSV.`, 'success');
+        if (newCardsCsv.length > 0) {
+          const skipNote =
+            skippedCsv > 0 ? ` Skipped ${skippedCsv} duplicate${skippedCsv === 1 ? '' : 's'}.` : '';
+          this.#pushToast(`Imported ${newCardsCsv.length} cards from CSV.${skipNote}`, 'success');
+        } else {
+          this.#pushToast('No new cards imported (all duplicates).', 'warning');
+        }
       });
     } catch {
       this.#pushToast('Unable to import CSV file.', 'error');

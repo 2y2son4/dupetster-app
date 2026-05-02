@@ -20,7 +20,7 @@ test.describe('import export', { tag: ['@transfer-flow', '@file-transfer', '@qr-
     const jsonDownload = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export JSON' }).click();
     await expect((await jsonDownload).suggestedFilename()).toMatch(
-      /^dupetster-cards-\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}\.json$/,
+      /^dupetster-cards-\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.json$/,
     );
     await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
       timeout: 5000,
@@ -29,7 +29,7 @@ test.describe('import export', { tag: ['@transfer-flow', '@file-transfer', '@qr-
     const csvDownload = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export CSV' }).click();
     await expect((await csvDownload).suggestedFilename()).toMatch(
-      /^dupetster-cards-\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}\.csv$/,
+      /^dupetster-cards-\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.csv$/,
     );
     await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
       timeout: 5000,
@@ -72,7 +72,7 @@ test.describe('import export', { tag: ['@transfer-flow', '@file-transfer', '@qr-
     ).toBeVisible({ timeout: 15000 });
 
     const storedCards = await page.evaluate(() => {
-      const raw = localStorage.getItem('dupetster_cards_v2');
+      const raw = localStorage.getItem('dupetster_cards');
       if (!raw) {
         return [] as Array<{ qrMode: string; qrPayload: string }>;
       }

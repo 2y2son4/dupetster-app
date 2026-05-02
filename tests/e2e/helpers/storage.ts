@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-const STORAGE_KEY = 'dupetster_cards_v2';
+const STORAGE_KEY = 'dupetster_cards';
 
 type SeedCard = {
   id: number;

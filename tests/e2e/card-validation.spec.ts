@@ -36,4 +36,20 @@ test.describe('card validation', { tag: ['@validation', '@form-errors', '@regres
     await expect(page.locator('.grid .card')).toHaveCount(1);
     await expect(page.getByText('Detected track ID: Not detected')).toBeVisible();
   });
+
+  test('shows error and does not add card when Spotify URL is a duplicate', async ({ page }) => {
+    await page.goto('/');
+
+    // Add the first card
+    await fillRequiredCardForm(page, { title: 'Original Song' });
+    await page.getByRole('button', { name: 'Add Card' }).click();
+    await expect(page.locator('.grid .card')).toHaveCount(1);
+
+    // Try to add a second card with the same Spotify URL
+    await fillRequiredCardForm(page, { title: 'Duplicate Song' });
+    await page.getByRole('button', { name: 'Add Card' }).click();
+
+    await expect(page.getByText('A card with this Spotify URL already exists.')).toBeVisible();
+    await expect(page.locator('.grid .card')).toHaveCount(1);
+  });
 });

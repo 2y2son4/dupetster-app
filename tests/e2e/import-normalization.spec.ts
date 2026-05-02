@@ -43,7 +43,7 @@ test.describe('import normalization', { tag: ['@import', '@normalization', '@fil
     await expect(page.locator('.grid .card')).toHaveCount(2);
 
     const storedCards = await page.evaluate(() => {
-      return JSON.parse(localStorage.getItem('dupetster_cards_v2') ?? '[]') as Array<{
+      return JSON.parse(localStorage.getItem('dupetster_cards') ?? '[]') as Array<{
         title: string;
         difficulty: string;
       }>;
@@ -76,7 +76,7 @@ test.describe('import normalization', { tag: ['@import', '@normalization', '@fil
     await expect(page.locator('.grid .card')).toHaveCount(2);
 
     const storedCards = await page.evaluate(() => {
-      return JSON.parse(localStorage.getItem('dupetster_cards_v2') ?? '[]') as Array<{
+      return JSON.parse(localStorage.getItem('dupetster_cards') ?? '[]') as Array<{
         title: string;
         difficulty: string;
       }>;
@@ -86,5 +86,74 @@ test.describe('import normalization', { tag: ['@import', '@normalization', '@fil
     const secondImported = storedCards.find((c) => c.title === 'Csv Song 2');
     await expect(firstImported?.difficulty).toBe('Original');
     await expect(secondImported?.difficulty).toBe('Expert');
+  });
+
+  test('skips duplicate URLs when importing JSON and shows skip count', async ({ page }) => {
+    await page.goto('/');
+
+    const jsonInput = page.locator('input.import-input[accept="application/json,.json"]');
+    const payload = [
+      {
+        title: 'First Import',
+        artist: 'Artist A',
+        year: 2020,
+        spotifyUrl: spotifyTrackUrl,
+        difficulty: 'Original',
+      },
+    ];
+
+    // First import — 1 new card
+    await jsonInput.setInputFiles({
+      name: 'first.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(payload), 'utf8'),
+    });
+    await expect(page.getByText('Imported 1 cards from JSON.')).toBeVisible();
+    await expect(page.locator('.grid .card')).toHaveCount(1);
+
+    // Second import with same URL — should be skipped
+    await jsonInput.setInputFiles({
+      name: 'dupe.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(payload), 'utf8'),
+    });
+    await expect(page.getByText('No new cards imported (all duplicates).')).toBeVisible();
+    await expect(page.locator('.grid .card')).toHaveCount(1);
+  });
+
+  test('skips duplicate URLs when importing CSV and shows skip count', async ({ page }) => {
+    const secondUrl = 'https://open.spotify.com/track/3n3Ppam7vgaVa1iaRUIOKE';
+    await page.goto('/');
+
+    const csvInput = page.locator('input.import-input[accept="text/csv,.csv"]');
+    const csvAll = [
+      'title,artist,year,spotifyUrl,difficulty',
+      `Existing Song,Artist A,2018,${spotifyTrackUrl},Original`,
+      `New Song,Artist B,2019,${secondUrl},Pro`,
+    ].join('\n');
+
+    // First import — 2 new cards
+    await csvInput.setInputFiles({
+      name: 'all.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csvAll, 'utf8'),
+    });
+    await expect(page.getByText('Imported 2 cards from CSV.')).toBeVisible();
+    await expect(page.locator('.grid .card')).toHaveCount(2);
+
+    // Second import with 1 duplicate + 1 new card
+    const csvMixed = [
+      'title,artist,year,spotifyUrl,difficulty',
+      `Existing Song,Artist A,2018,${spotifyTrackUrl},Original`,
+      `Brand New,Artist C,2021,https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC,Expert`,
+    ].join('\n');
+
+    await csvInput.setInputFiles({
+      name: 'mixed.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csvMixed, 'utf8'),
+    });
+    await expect(page.getByText('Imported 1 cards from CSV. Skipped 1 duplicate.')).toBeVisible();
+    await expect(page.locator('.grid .card')).toHaveCount(3);
   });
 });

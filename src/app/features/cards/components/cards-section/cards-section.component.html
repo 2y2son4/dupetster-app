@@ -68,8 +68,8 @@
     <div class="grid">
       @for (card of pagedCards(); track card.id) {
         <article class="card" [class.selected]="isSelected(card.id)" (click)="toggleSelect.emit(card.id)">
-          <h3 class="band">{{ card.title }}</h3>
-          <p>{{ card.artist }}</p>
+          <h3 class="band">{{ card.artist }}</h3>
+          <p>{{ card.title }}</p>
           <div class="year">{{ revealYear() ? card.year : 'YEAR' }}</div>
           <div class="split"></div>
           <div class="qr-box">
