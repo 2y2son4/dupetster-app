@@ -5,6 +5,7 @@ export interface SpotifyPlaylistTrack {
   album: string;
   year: number;
   spotifyUrl: string;
+  genre?: string;
 }
 
 export interface SpotifyAuthSession {

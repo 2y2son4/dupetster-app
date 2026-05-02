@@ -1,19 +1,19 @@
 <article class="panel preview-panel">
   <h2>Live Preview</h2>
   <label class="toggle">
-    <input type="checkbox" [ngModel]="revealYear" (ngModelChange)="revealYearChange.emit($event)" />
+    <input type="checkbox" [ngModel]="revealYear()" (ngModelChange)="revealYearChange.emit($event)" />
     Reveal year
   </label>
 
-  <div class="preview-card" [class.empty]="!form.title">
-    @if (form.title) {
-      <div class="preview-title">{{ form.title }}</div>
-      <div class="preview-year">{{ revealYear ? form.year : 'YEAR' }}</div>
-      <div class="preview-artist">{{ form.artist }}</div>
+  <div class="preview-card" [class.empty]="!form().title">
+    @if (form().title) {
+      <div class="preview-title">{{ form().title }}</div>
+      <div class="preview-year">{{ revealYear() ? form().year : 'YEAR' }}</div>
+      <div class="preview-artist">{{ form().artist }}</div>
       <div class="preview-split"></div>
       <div class="preview-qr">
-        @if (previewQr) {
-          <img [src]="previewQr" alt="QR preview" />
+        @if (previewQr()) {
+          <img [src]="previewQr()" alt="QR preview" />
         } @else {
           <span>QR</span>
         }

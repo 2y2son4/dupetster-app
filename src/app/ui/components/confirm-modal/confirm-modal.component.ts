@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-confirm-modal',
@@ -8,10 +8,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   templateUrl: './confirm-modal.component.html',
 })
 export class ConfirmModalComponent {
-  @Input({ required: true }) visible = false;
-  @Input() title = 'Confirm';
-  @Input() message = 'Are you sure?';
-  @Input() confirmLabel = 'Confirm';
-  @Output() cancel = new EventEmitter<void>();
-  @Output() confirm = new EventEmitter<void>();
+  visible = input.required<boolean>();
+  title = input('Confirm');
+  message = input('Are you sure?');
+  confirmLabel = input('Confirm');
+  cancel = output<void>();
+  confirm = output<void>();
 }

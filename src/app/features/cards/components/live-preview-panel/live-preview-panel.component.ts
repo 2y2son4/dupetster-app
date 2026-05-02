@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CardDraft } from '../../../../core/models/card.model';
 
@@ -10,8 +10,8 @@ import { CardDraft } from '../../../../core/models/card.model';
   templateUrl: './live-preview-panel.component.html',
 })
 export class LivePreviewPanelComponent {
-  @Input({ required: true }) form!: CardDraft;
-  @Input({ required: true }) revealYear = true;
-  @Input() previewQr = '';
-  @Output() revealYearChange = new EventEmitter<boolean>();
+  form = input.required<CardDraft>();
+  revealYear = input.required<boolean>();
+  previewQr = input('');
+  revealYearChange = output<boolean>();
 }

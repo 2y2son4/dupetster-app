@@ -1,5 +1,5 @@
 <div class="toast-layer">
-  @for (t of toasts; track t.id) {
+  @for (t of toasts(); track t.id) {
     <div class="toast" [class]="'toast ' + t.type">
       <div class="toast-body">
         <span>{{ t.text }}</span>

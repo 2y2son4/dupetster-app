@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ToastMessage } from '../../../core/models/ui.model';
 
 @Component({
@@ -9,6 +9,6 @@ import { ToastMessage } from '../../../core/models/ui.model';
   templateUrl: './toast-layer.component.html',
 })
 export class ToastLayerComponent {
-  @Input({ required: true }) toasts: ToastMessage[] = [];
-  @Output() dismiss = new EventEmitter<number>();
+  toasts = input.required<ToastMessage[]>();
+  dismiss = output<number>();
 }

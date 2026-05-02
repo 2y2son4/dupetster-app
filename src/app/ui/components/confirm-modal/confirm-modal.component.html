@@ -1,11 +1,11 @@
-@if (visible) {
+@if (visible()) {
   <div class="modal">
     <div class="modal-content">
-      <h3>{{ title }}</h3>
-      <p>{{ message }}</p>
+      <h3>{{ title() }}</h3>
+      <p>{{ message() }}</p>
       <div class="modal-actions">
         <button class="btn btn-ghost" (click)="cancel.emit()">Cancel</button>
-        <button class="btn btn-danger" (click)="confirm.emit()">{{ confirmLabel }}</button>
+        <button class="btn btn-danger" (click)="confirm.emit()">{{ confirmLabel() }}</button>
       </div>
     </div>
   </div>

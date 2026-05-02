@@ -1,16 +1,16 @@
 <section class="right panel">
   <div class="toolbar">
-    <h2>Cards ({{ filteredCards.length }})</h2>
+    <h2>Cards ({{ filteredCards().length }})</h2>
     <div class="toolbar-controls">
-      <input type="text" placeholder="Search title or artist" [ngModel]="searchQuery"
+      <input type="text" placeholder="Search title or artist" [ngModel]="searchQuery()"
         (ngModelChange)="searchQueryChange.emit($event)" />
-      <select [ngModel]="difficultyFilter" (ngModelChange)="difficultyFilterChange.emit($event)">
+      <select [ngModel]="difficultyFilter()" (ngModelChange)="difficultyFilterChange.emit($event)">
         <option value="">All difficulties</option>
-        @for (d of difficulties; track d) {
+        @for (d of difficulties(); track d) {
           <option [value]="d">{{ d }}</option>
         }
       </select>
-      <select [ngModel]="sortMode" (ngModelChange)="sortModeChange.emit($event)">
+      <select [ngModel]="sortMode()" (ngModelChange)="sortModeChange.emit($event)">
         <option value="recent">Recent</option>
         <option value="year">Year</option>
         <option value="title">Title</option>
@@ -19,21 +19,21 @@
   </div>
 
   <div class="quick-actions">
-    <button class="btn btn-ghost" [disabled]="filteredCards.length === 0" (click)="toggleSelectAllFiltered.emit()">
-      {{ allFilteredSelected ? 'Unselect All Filtered' : 'Select All Filtered' }}
+    <button class="btn btn-ghost" [disabled]="filteredCards().length === 0" (click)="toggleSelectAllFiltered.emit()">
+      {{ allFilteredSelected() ? 'Unselect All Filtered' : 'Select All Filtered' }}
     </button>
-    <button class="btn btn-primary" [disabled]="selectedCount === 0 || pdfLoading" (click)="exportPdf.emit()">
-      @if (!pdfLoading) {
+    <button class="btn btn-primary" [disabled]="selectedCount() === 0 || pdfLoading()" (click)="exportPdf.emit()">
+      @if (!pdfLoading()) {
         Export PDF
       } @else {
         Generating...
       }
     </button>
 
-    <button class="btn btn-primary" [disabled]="selectedCount === 0" (click)="printSelected.emit()">Print</button>
+    <button class="btn btn-primary" [disabled]="selectedCount() === 0" (click)="printSelected.emit()">Print</button>
     <button class="btn btn-ghost" (click)="exportJson.emit()">Export JSON</button>
     <button class="btn btn-ghost" (click)="exportCsv.emit()">Export CSV</button>
-    <button class="btn btn-ghost" [disabled]="cardsCount === 0" (click)="regenerateQr.emit()">
+    <button class="btn btn-ghost" [disabled]="cardsCount() === 0" (click)="regenerateQr.emit()">
       Rebuild QR (Current Mode)
     </button>
 
@@ -50,15 +50,15 @@
 
   <p class="hint">
     Select cards by clicking them. Print and PDF use the selected cards in a 4x4 A4 sheet template.
-    Current QR mode: <strong>{{ qrModeLabel }}</strong>.
+    Current QR mode: <strong>{{ qrModeLabel() }}</strong>.
   </p>
 
-  @if (pagedCards.length > 0) {
+  @if (pagedCards().length > 0) {
     <div class="grid">
-      @for (card of pagedCards; track card.id) {
+      @for (card of pagedCards(); track card.id) {
         <article class="card" [class.selected]="isSelected(card.id)" (click)="toggleSelect.emit(card.id)">
           <h3>{{ card.title }}</h3>
-          <div class="year">{{ revealYear ? card.year : 'YEAR' }}</div>
+          <div class="year">{{ revealYear() ? card.year : 'YEAR' }}</div>
           <p>{{ card.artist }}</p>
           <div class="split"></div>
           <div class="qr-box">
@@ -85,21 +85,21 @@
     </div>
   }
 
-  @if (totalPages > 1) {
+  @if (totalPages() > 1) {
     <div class="pager">
-      <button class="btn btn-ghost" [disabled]="currentPage === 1" (click)="previousPage.emit()">Previous</button>
-      <span>Page {{ currentPage }} / {{ totalPages }}</span>
-      <button class="btn btn-ghost" [disabled]="currentPage === totalPages" (click)="nextPage.emit()">Next</button>
+      <button class="btn btn-ghost" [disabled]="currentPage() === 1" (click)="previousPage.emit()">Previous</button>
+      <span>Page {{ currentPage() }} / {{ totalPages() }}</span>
+      <button class="btn btn-ghost" [disabled]="currentPage() === totalPages()" (click)="nextPage.emit()">Next</button>
     </div>
   }
 
   <section class="print-sheet" aria-hidden="true">
-    @for (page of selectedPages; track $index) {
+    @for (page of selectedPages(); track $index) {
       <div class="sheet-page">
         @for (card of page; track card.id) {
           <div class="sheet-card">
             <div class="sheet-title">{{ card.title }}</div>
-            <div class="sheet-year">{{ revealYear ? card.year : 'YEAR' }}</div>
+            <div class="sheet-year">{{ revealYear() ? card.year : 'YEAR' }}</div>
             <div class="sheet-artist">{{ card.artist }}</div>
             <div class="sheet-separator"></div>
             <div class="sheet-qr-box">

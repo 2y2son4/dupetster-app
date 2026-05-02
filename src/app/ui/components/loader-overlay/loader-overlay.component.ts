@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-loader-overlay',
@@ -8,7 +8,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   templateUrl: './loader-overlay.component.html',
 })
 export class LoaderOverlayComponent {
-  @Input({ required: true }) isBusy = false;
-  @Input() busyMessage = '';
-  @Output() dismiss = new EventEmitter<void>();
+  isBusy = input.required<boolean>();
+  busyMessage = input('');
+  dismiss = output<void>();
 }

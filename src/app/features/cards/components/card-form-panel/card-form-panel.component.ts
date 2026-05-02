@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   CardDraft,
@@ -15,21 +15,22 @@ import {
   templateUrl: './card-form-panel.component.html',
 })
 export class CardFormPanelComponent {
-  @Input({ required: true }) form!: CardDraft;
-  @Input({ required: true }) editingCardId: number | null = null;
-  @Input({ required: true }) difficulties: Difficulty[] = [];
-  @Input({ required: true }) qrModes: QrModeOption[] = [];
-  @Input({ required: true }) qrMode: QrPayloadMode = 'raw-url';
-  @Input() detectedTrackId = 'Not detected';
+  form = input.required<CardDraft>();
+  editingCardId = input<number | null>(null);
+  difficulties = input.required<Difficulty[]>();
+  qrModes = input.required<QrModeOption[]>();
+  qrMode = input.required<QrPayloadMode>();
+  detectedTrackId = input('Not detected');
+  spotifyAutofillLoading = input(false);
 
-  @Output() formChange = new EventEmitter<CardDraft>();
-  @Output() qrModeChange = new EventEmitter<QrPayloadMode>();
-  @Output() save = new EventEmitter<void>();
-  @Output() clear = new EventEmitter<void>();
+  formChange = output<CardDraft>();
+  qrModeChange = output<QrPayloadMode>();
+  save = output<void>();
+  clear = output<void>();
 
   onFieldChange<K extends keyof CardDraft>(key: K, value: CardDraft[K]): void {
     this.formChange.emit({
-      ...this.form,
+      ...this.form(),
       [key]: value,
     });
   }

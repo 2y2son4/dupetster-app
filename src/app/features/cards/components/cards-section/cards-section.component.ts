@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Difficulty, MusicCard, QrPayloadMode, SortMode } from '../../../../core/models/card.model';
 
@@ -10,43 +10,43 @@ import { Difficulty, MusicCard, QrPayloadMode, SortMode } from '../../../../core
   templateUrl: './cards-section.component.html',
 })
 export class CardsSectionComponent {
-  @Input({ required: true }) filteredCards: MusicCard[] = [];
-  @Input({ required: true }) pagedCards: MusicCard[] = [];
-  @Input({ required: true }) selectedPages: MusicCard[][] = [];
-  @Input({ required: true }) selectedCardIds = new Set<number>();
-  @Input({ required: true }) difficulties: Difficulty[] = [];
-  @Input({ required: true }) searchQuery = '';
-  @Input({ required: true }) difficultyFilter = '';
-  @Input({ required: true }) sortMode: SortMode = 'recent';
-  @Input({ required: true }) selectedCount = 0;
-  @Input({ required: true }) allFilteredSelected = false;
-  @Input({ required: true }) cardsCount = 0;
-  @Input({ required: true }) pdfLoading = false;
-  @Input({ required: true }) revealYear = true;
-  @Input({ required: true }) totalPages = 1;
-  @Input({ required: true }) currentPage = 1;
-  @Input() qrModeLabel = '';
+  filteredCards = input.required<MusicCard[]>();
+  pagedCards = input.required<MusicCard[]>();
+  selectedPages = input.required<MusicCard[][]>();
+  selectedCardIds = input.required<Set<number>>();
+  difficulties = input.required<Difficulty[]>();
+  searchQuery = input.required<string>();
+  difficultyFilter = input.required<string>();
+  sortMode = input.required<SortMode>();
+  selectedCount = input.required<number>();
+  allFilteredSelected = input.required<boolean>();
+  cardsCount = input.required<number>();
+  pdfLoading = input.required<boolean>();
+  revealYear = input.required<boolean>();
+  totalPages = input.required<number>();
+  currentPage = input.required<number>();
+  qrModeLabel = input('');
 
-  @Output() searchQueryChange = new EventEmitter<string>();
-  @Output() difficultyFilterChange = new EventEmitter<string>();
-  @Output() sortModeChange = new EventEmitter<SortMode>();
-  @Output() toggleSelectAllFiltered = new EventEmitter<void>();
-  @Output() exportPdf = new EventEmitter<void>();
-  @Output() printSelected = new EventEmitter<void>();
-  @Output() exportJson = new EventEmitter<void>();
-  @Output() exportCsv = new EventEmitter<void>();
-  @Output() regenerateQr = new EventEmitter<void>();
-  @Output() importJson = new EventEmitter<Event>();
-  @Output() importCsv = new EventEmitter<Event>();
-  @Output() toggleSelect = new EventEmitter<number>();
-  @Output() editCard = new EventEmitter<MusicCard>();
-  @Output() duplicateCard = new EventEmitter<MusicCard>();
-  @Output() deleteCard = new EventEmitter<MusicCard>();
-  @Output() previousPage = new EventEmitter<void>();
-  @Output() nextPage = new EventEmitter<void>();
+  searchQueryChange = output<string>();
+  difficultyFilterChange = output<string>();
+  sortModeChange = output<SortMode>();
+  toggleSelectAllFiltered = output<void>();
+  exportPdf = output<void>();
+  printSelected = output<void>();
+  exportJson = output<void>();
+  exportCsv = output<void>();
+  regenerateQr = output<void>();
+  importJson = output<Event>();
+  importCsv = output<Event>();
+  toggleSelect = output<number>();
+  editCard = output<MusicCard>();
+  duplicateCard = output<MusicCard>();
+  deleteCard = output<MusicCard>();
+  previousPage = output<void>();
+  nextPage = output<void>();
 
   isSelected(cardId: number): boolean {
-    return this.selectedCardIds.has(cardId);
+    return this.selectedCardIds().has(cardId);
   }
 
   trackById(_: number, card: MusicCard): number {
