@@ -113,8 +113,9 @@
   width: 90px;
   height: 90px;
   margin: 0 auto;
-  border: 1px dashed var(--line);
+  border: 1px solid var(--line);
   background: var(--panel);
+  padding: 2px;
 }
 
 .qr-box img {
@@ -126,7 +127,7 @@
   display: flex;
   justify-content: center;
   gap: 6px;
-  margin-top: 8px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 

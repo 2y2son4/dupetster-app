@@ -60,7 +60,7 @@
 
   <div class="field">
     <label for="year">Release year *</label>
-    <input id="year" type="number" min="1900" max="2100" [ngModel]="form().year"
+    <input id="year" type="number" min="1400" max="{{currentYear}}" [ngModel]="form().year"
       (ngModelChange)="onFieldChange('year', $event)" />
   </div>
 

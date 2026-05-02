@@ -35,6 +35,8 @@ export class CardFormPanelComponent {
   save = output<void>();
   clear = output<void>();
 
+  currentYear = new Date().getFullYear();
+
   onFieldChange<K extends keyof CardDraft>(key: K, value: CardDraft[K]): void {
     this.formChange.emit({
       ...this.form(),

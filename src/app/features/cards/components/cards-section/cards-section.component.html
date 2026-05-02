@@ -73,11 +73,11 @@
           <p>{{ card.title }}</p>
           <div class="year">{{ revealYear() ? card.year : 'YEAR' }}</div>
           <div class="split"></div>
-          <div class="qr-box">
-            <img [src]="card.qrDataUrl" alt="Card QR" />
-          </div>
           <div class="chips">
             <span>{{ card.difficulty }}</span>
+          </div>
+          <div class="qr-box">
+            <img [src]="card.qrDataUrl" alt="Card QR" />
           </div>
           <div class="card-actions" (click)="$event.stopPropagation()">
             <button class="btn btn-small" (click)="editCard.emit(card)">Edit</button>

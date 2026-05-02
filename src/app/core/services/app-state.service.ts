@@ -128,6 +128,8 @@ export class AppStateService {
     return this.cards.filter((card) => this.selectedCardIds.has(card.id));
   }
 
+  currentYear = new Date().getFullYear();
+
   async saveOrUpdateCard(): Promise<void> {
     if (!this.#validateForm()) {
       return;
@@ -982,8 +984,8 @@ export class AppStateService {
       return false;
     }
 
-    if (Number(this.form.year) < 1900 || Number(this.form.year) > 2100) {
-      this.#pushToast('Release year must be between 1900 and 2100.', 'error');
+    if (Number(this.form.year) < 1400 || Number(this.form.year) > this.currentYear) {
+      this.#pushToast(`Release year must be between 1400 and ${this.currentYear}.`, 'error');
       return false;
     }
 
