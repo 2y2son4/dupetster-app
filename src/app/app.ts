@@ -6,6 +6,7 @@ import { ConfirmModalComponent } from './ui/components/confirm-modal/confirm-mod
 import { LoaderOverlayComponent } from './ui/components/loader-overlay/loader-overlay.component';
 import { ToastLayerComponent } from './ui/components/toast-layer/toast-layer.component';
 import { AppStateService } from './core/services/app-state.service';
+import { SpotifyImportPanelComponent } from './features/spotify/components/spotify-import-panel/spotify-import-panel.component';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ import { AppStateService } from './core/services/app-state.service';
     CardFormPanelComponent,
     LivePreviewPanelComponent,
     CardsSectionComponent,
+    SpotifyImportPanelComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',

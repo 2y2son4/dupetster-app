@@ -14,40 +14,30 @@
 
 <main class="page">
   <section class="left">
-    <!--
-      <app-spotify-import-panel
-        [spotifyClientId]="state.spotifyClientId"
-        [spotifyClientSecret]="state.spotifyClientSecret"
-        [spotifyPlaylistInput]="state.spotifyPlaylistInput"
-        [spotifyTrackListInput]="state.spotifyTrackListInput"
-        [spotifyImportDifficulty]="state.spotifyImportDifficulty"
-        [difficulties]="state.difficulties"
-        [spotifyConnected]="state.spotifyConnected"
-        [spotifyImportLoading]="state.spotifyImportLoading"
-        [proxyImportLoading]="state.proxyImportLoading"
-        [spotifyTrackListImportLoading]="state.spotifyTrackListImportLoading"
-        (spotifyClientIdChange)="state.spotifyClientId = $event"
-        (spotifyClientSecretChange)="state.spotifyClientSecret = $event"
-        (spotifyPlaylistInputChange)="state.spotifyPlaylistInput = $event"
-        (spotifyTrackListInputChange)="state.spotifyTrackListInput = $event"
-        (spotifyImportDifficultyChange)="state.spotifyImportDifficulty = $event"
-        (connect)="state.connectSpotifyAccount()"
-        (disconnect)="state.disconnectSpotifyAccount()"
-        (importPlaylist)="state.importFromSpotifyPlaylist()"
-        (importProxy)="state.importFromPlaylistViaProxy()"
-        (importTrackList)="state.importFromSpotifyTrackList()"
-      ></app-spotify-import-panel>
-    -->
+    <!-- <app-spotify-import-panel [spotifyClientId]="state.spotifyClientId"
+      [spotifyClientSecret]="state.spotifyClientSecret" [spotifyPlaylistInput]="state.spotifyPlaylistInput"
+      [spotifyTrackListInput]="state.spotifyTrackListInput" [spotifyImportDifficulty]="state.spotifyImportDifficulty"
+      [difficulties]="state.difficulties" [spotifyConnected]="state.spotifyConnected"
+      [spotifyImportLoading]="state.spotifyImportLoading()" [proxyImportLoading]="state.proxyImportLoading()"
+      [spotifyTrackListImportLoading]="state.spotifyTrackListImportLoading()"
+      (spotifyClientIdChange)="state.spotifyClientId = $event"
+      (spotifyClientSecretChange)="state.spotifyClientSecret = $event"
+      (spotifyPlaylistInputChange)="state.spotifyPlaylistInput = $event"
+      (spotifyTrackListInputChange)="state.spotifyTrackListInput = $event"
+      (spotifyImportDifficultyChange)="state.spotifyImportDifficulty = $event" (connect)="state.connectSpotifyAccount()"
+      (disconnect)="state.disconnectSpotifyAccount()" (importPlaylist)="state.importFromSpotifyPlaylist()"
+      (importProxy)="state.importFromPlaylistViaProxy()"
+      (importTrackList)="state.importFromSpotifyTrackList()" /> -->
 
     <app-card-form-panel [form]="state.form" [editingCardId]="state.editingCardId" [difficulties]="state.difficulties"
       [qrModes]="state.qrModes" [qrMode]="state.qrMode"
       [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)"
       [spotifyAutofillLoading]="state.spotifyAutofillLoading()" (formChange)="state.onFormChange($event)"
       (qrModeChange)="state.qrMode = $event" (save)="state.saveOrUpdateCard()"
-      (clear)="state.resetForm()"></app-card-form-panel>
+      (clear)="state.resetForm()" />
 
     <app-live-preview-panel [form]="state.form" [revealYear]="state.revealYear" [previewQr]="state.previewQr()"
-      (revealYearChange)="state.onRevealYearChange($event)"></app-live-preview-panel>
+      (revealYearChange)="state.onRevealYearChange($event)" />
   </section>
 
   <app-cards-section [filteredCards]="state.filteredCards" [pagedCards]="state.pagedCards"
@@ -63,7 +53,7 @@
     (importJson)="state.onImportJson($event)" (importCsv)="state.onImportCsv($event)"
     (toggleSelect)="state.toggleSelect($event)" (editCard)="state.editCard($event)"
     (duplicateCard)="state.duplicateCard($event)" (deleteCard)="state.askDelete($event)"
-    (previousPage)="state.previousPage()" (nextPage)="state.nextPage()"></app-cards-section>
+    (previousPage)="state.previousPage()" (nextPage)="state.nextPage()" />
 </main>
 <footer class="page-footer">
   <p>

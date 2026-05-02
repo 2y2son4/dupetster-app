@@ -5,6 +5,7 @@ app-root {
   --grey: #4a4a4a;
   --pale-grey: #f2f2f2;
   --magenta: #cc1084;
+  --light-magenta: #d375af;
   --main-color: var(--white);
   --secondary-color: var(--black);
   --tertiary-color: var(--grey);
@@ -14,7 +15,7 @@ app-root {
   --panel: var(--main-color);
   --sheet: var(--pale-grey);
   --brand: var(--secondary-color);
-  --accent: var(--magenta);
+  --accent: var(--light-magenta);
   --danger: var(--secondary-color);
   --inverse-ink: var(--main-color);
   display: block;
