@@ -19,14 +19,18 @@ test.describe('import export', { tag: ['@transfer-flow', '@file-transfer', '@qr-
 
     const jsonDownload = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export JSON' }).click();
-    await expect((await jsonDownload).suggestedFilename()).toBe('music-cards.json');
+    await expect((await jsonDownload).suggestedFilename()).toMatch(
+      /^dupetster-cards-\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}\.json$/,
+    );
     await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
       timeout: 5000,
     });
 
     const csvDownload = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export CSV' }).click();
-    await expect((await csvDownload).suggestedFilename()).toBe('music-cards.csv');
+    await expect((await csvDownload).suggestedFilename()).toMatch(
+      /^dupetster-cards-\d{2}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}\.csv$/,
+    );
     await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
       timeout: 5000,
     });

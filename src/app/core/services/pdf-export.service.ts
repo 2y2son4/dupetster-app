@@ -8,7 +8,7 @@ export class PdfExportService {
   exportCardsSheetPdf(
     cards: MusicCard[],
     revealYear: boolean,
-    filename = 'dupetster-cards-sheet.pdf',
+    filename = 'dupetster-cards-A4.pdf',
   ): void {
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageWidth = 210;

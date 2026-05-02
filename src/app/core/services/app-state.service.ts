@@ -377,7 +377,11 @@ export class AppStateService {
       (value) => this.#setPdfLoading(value),
       async () => {
         await this.#withBusy('Exporting PDF...', async () => {
-          this.pdfExportService.exportCardsSheetPdf(selected, this.revealYear);
+          this.pdfExportService.exportCardsSheetPdf(
+            selected,
+            this.revealYear,
+            this.#buildExportFilename('dupetster-cards-A4', 'pdf'),
+          );
           this.#pushToast('PDF generated with 3x3 card sheet layout.', 'success');
         });
       },
@@ -765,7 +769,10 @@ export class AppStateService {
   async exportJson(): Promise<void> {
     await this.#withBusy('Exporting JSON...', async () => {
       await this.#yieldToUi();
-      this.pdfExportService.downloadJson(this.cards, 'music-cards.json');
+      this.pdfExportService.downloadJson(
+        this.cards,
+        this.#buildExportFilename('dupetster-cards', 'json'),
+      );
       this.#pushToast('JSON exported.', 'success');
     });
   }
@@ -786,10 +793,24 @@ export class AppStateService {
           genre: card.genre,
           difficulty: card.difficulty,
         })),
-        'music-cards.csv',
+        this.#buildExportFilename('dupetster-cards', 'csv'),
       );
       this.#pushToast('CSV exported.', 'success');
     });
+  }
+
+  #buildExportFilename(baseName: string, extension: 'pdf' | 'json' | 'csv'): string {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = String(now.getFullYear()).slice(-2);
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+    // Use dashes instead of colons because Windows filenames cannot contain ':'.
+    const uniqueId = `${day}-${month}-${year}_${hours}-${minutes}-${seconds}-${milliseconds}`;
+    return `${baseName}-${uniqueId}.${extension}`;
   }
 
   async onImportJson(event: Event): Promise<void> {
