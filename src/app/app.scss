@@ -213,6 +213,10 @@ textarea {
   padding: 6px 9px;
 }
 
+.btn-line {
+  border: none;
+}
+
 .hint {
   margin: 10px 0;
   color: #444;
@@ -236,7 +240,8 @@ textarea {
   font-size: 0.82rem;
 }
 
-a::selection, a {
+a::selection,
+a {
   color: var(--ink);
 }
 

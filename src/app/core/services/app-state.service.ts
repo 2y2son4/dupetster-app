@@ -210,17 +210,6 @@ export class AppStateService {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  duplicateCard(card: MusicCard): void {
-    const copy: MusicCard = {
-      ...card,
-      id: Date.now() + Math.floor(Math.random() * 1000),
-    };
-    this.cards.push(copy);
-    void this.#persistCards();
-    this.applyFilters();
-    this.#pushToast('Card duplicated.', 'success');
-  }
-
   askDelete(card: MusicCard): void {
     this.cardPendingDelete = card;
   }

@@ -6,7 +6,8 @@
     <div class="input-with-action">
       <input id="spotifyClientId" [type]="showSpotifyClientId ? 'text' : 'password'" [ngModel]="spotifyClientId()"
         (ngModelChange)="spotifyClientIdChange.emit($event)" />
-      <button class="btn btn-ghost btn-small" type="button" [attr.aria-label]="showSpotifyClientId ? 'Hide Spotify Client ID' : 'Show Spotify Client ID'"
+      <button class="btn btn-ghost btn-small btn-line" type="button"
+        [attr.aria-label]="showSpotifyClientId ? 'Hide Spotify Client ID' : 'Show Spotify Client ID'"
         (click)="toggleSpotifyClientIdVisibility()">
         &#128065; {{ showSpotifyClientId ? 'Hide' : 'Show' }}
       </button>
@@ -16,7 +17,8 @@
     </small>
     <div class="actions">
       @if (!spotifyConnected()) {
-        <button class="btn btn-primary" type="button" (click)="connectSpotify.emit()">Connect Spotify</button>
+        <button class="btn btn-primary" type="button" [disabled]="!spotifyClientId().trim()"
+          (click)="connectSpotify.emit()">Connect Spotify</button>
       } @else {
         <button class="btn btn-ghost" type="button" (click)="disconnectSpotify.emit()">Disconnect Spotify</button>
       }

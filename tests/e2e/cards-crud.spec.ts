@@ -30,17 +30,13 @@ test.describe('cards crud', { tag: ['@card-management', '@CRUD', '@actions'] }, 
     });
   });
 
-  test('duplicates a card and deletes with confirmation modal', async ({ page }) => {
+  test('deletes a card with confirmation modal', async ({ page }) => {
     await seedCards(page, [
       makeCard({ id: 1, title: 'Seed Song 1', artist: 'Seed Artist 1', year: 2001 }),
       makeCard({ id: 2, title: 'Seed Song 2', artist: 'Seed Artist 2', year: 2002 }),
     ]);
 
     await page.goto('/');
-
-    const songOneCard = page.locator('.grid .card', { hasText: 'Seed Song 1' }).first();
-    await songOneCard.getByRole('button', { name: 'Duplicate' }).click();
-    await expect(page.locator('.grid .card')).toHaveCount(3);
 
     const deleteTarget = page.locator('.grid .card', { hasText: 'Seed Song 2' }).first();
     await deleteTarget.getByRole('button', { name: 'Delete' }).click();

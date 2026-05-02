@@ -30,10 +30,12 @@
       (importTrackList)="state.importFromSpotifyTrackList()" /> -->
 
     <app-card-form-panel [form]="state.form" [editingCardId]="state.editingCardId" [difficulties]="state.difficulties"
-      [qrModes]="state.qrModes" [qrMode]="state.qrMode"
-      [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)"
+      [spotifyClientId]="state.spotifyClientId" [spotifyConnected]="state.spotifyConnected" [qrModes]="state.qrModes"
+      [qrMode]="state.qrMode" [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)"
       [spotifyAutofillLoading]="state.spotifyAutofillLoading()" (formChange)="state.onFormChange($event)"
-      (qrModeChange)="state.qrMode = $event" (save)="state.saveOrUpdateCard()" (clear)="state.resetForm()" />
+      (spotifyClientIdChange)="state.spotifyClientId = $event" (connectSpotify)="state.connectSpotifyAccount()"
+      (disconnectSpotify)="state.disconnectSpotifyAccount()" (qrModeChange)="state.qrMode = $event"
+      (save)="state.saveOrUpdateCard()" (clear)="state.resetForm()" />
 
     <app-live-preview-panel [form]="state.form" [revealYear]="state.revealYear" [previewQr]="state.previewQr()"
       (revealYearChange)="state.onRevealYearChange($event)" />
@@ -51,8 +53,8 @@
     (exportPdf)="state.exportPdf()" (exportJson)="state.exportJson()" (exportCsv)="state.exportCsv()"
     (regenerateQr)="state.regenerateQrForAllCards()" (importJson)="state.onImportJson($event)"
     (importCsv)="state.onImportCsv($event)" (toggleSelect)="state.toggleSelect($event)"
-    (editCard)="state.editCard($event)" (duplicateCard)="state.duplicateCard($event)"
-    (deleteCard)="state.askDelete($event)" (previousPage)="state.previousPage()" (nextPage)="state.nextPage()" />
+    (editCard)="state.editCard($event)" (deleteCard)="state.askDelete($event)" (previousPage)="state.previousPage()"
+    (nextPage)="state.nextPage()" />
 </main>
 <footer class="page-footer">
   <p>

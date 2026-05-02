@@ -40,7 +40,6 @@ export class CardsSectionComponent {
   importCsv = output<Event>();
   toggleSelect = output<number>();
   editCard = output<MusicCard>();
-  duplicateCard = output<MusicCard>();
   deleteCard = output<MusicCard>();
   previousPage = output<void>();
   nextPage = output<void>();
