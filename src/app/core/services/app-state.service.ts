@@ -52,7 +52,6 @@ export class AppStateService {
   difficultyFilter = '';
   sortMode: SortMode = 'recent';
   currentPage = 1;
-  revealYear = true;
   pdfLoading = signal(false);
   qrMode: QrPayloadMode = 'raw-url';
   spotifyClientId = '';
@@ -385,10 +384,6 @@ export class AppStateService {
     this.applyFilters();
   }
 
-  onRevealYearChange(value: boolean): void {
-    this.revealYear = value;
-  }
-
   previousPage(): void {
     this.currentPage = Math.max(1, this.currentPage - 1);
   }
@@ -410,7 +405,6 @@ export class AppStateService {
         await this.#withBusy('Exporting PDF...', async () => {
           this.pdfExportService.exportCardsSheetPdf(
             selected,
-            this.revealYear,
             this.#buildExportFilename('dupetster-cards-A4', 'pdf'),
           );
           this.#pushToast('PDF generated with 3x3 card sheet layout.', 'success');

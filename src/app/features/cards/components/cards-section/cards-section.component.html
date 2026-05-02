@@ -71,7 +71,7 @@
         <article class="card" [class.selected]="isSelected(card.id)" (click)="toggleSelect.emit(card.id)">
           <h3 class="band">{{ card.artist }}</h3>
           <p>{{ card.title }}</p>
-          <div class="year">{{ revealYear() ? card.year : 'YEAR' }}</div>
+          <div class="year">{{ card.year }}</div>
           <div class="split"></div>
           <div class="chips">
             <span>{{ card.difficulty }}</span>

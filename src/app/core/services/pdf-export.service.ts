@@ -7,7 +7,6 @@ import { MusicCard } from '../models/card.model';
 export class PdfExportService {
   exportCardsSheetPdf(
     cards: MusicCard[],
-    revealYear: boolean,
     filename = 'dupetster-cards-A4.pdf',
   ): void {
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -31,7 +30,7 @@ export class PdfExportService {
         const row = Math.floor(i / cols);
         const x = col * cardWidth;
         const y = row * cardHeight;
-        this.drawPdfCard(pdf, card, x, y, cardWidth, cardHeight, qrSize, revealYear);
+        this.drawPdfCard(pdf, card, x, y, cardWidth, cardHeight, qrSize);
       });
 
       // Draw a single dashed grid once per page to avoid doubled borders
@@ -72,7 +71,6 @@ export class PdfExportService {
     w: number,
     h: number,
     qrSize: number,
-    revealYear: boolean,
   ): void {
     const safeInset = 2.2;
 
@@ -144,7 +142,7 @@ export class PdfExportService {
     // 3 — YEAR (big)
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(yearFontSize);
-    pdf.text(revealYear ? String(card.year) : 'YEAR', centerX, curY, { align: 'center' });
+    pdf.text(String(card.year), centerX, curY, { align: 'center' });
 
     pdf.setLineDashPattern([1, 1], 0);
     pdf.line(x + safeInset + 1, splitY, x + w - safeInset - 1, splitY);

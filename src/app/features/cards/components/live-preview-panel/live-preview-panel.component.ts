@@ -12,7 +12,5 @@ import { CardDraft } from '../../../../core/models/card.model';
 })
 export class LivePreviewPanelComponent {
   form = input.required<CardDraft>();
-  revealYear = input.required<boolean>();
   previewQr = input('');
-  revealYearChange = output<boolean>();
 }

@@ -22,7 +22,6 @@ export class CardsSectionComponent {
   allFilteredSelected = input.required<boolean>();
   cardsCount = input.required<number>();
   pdfLoading = input.required<boolean>();
-  revealYear = input.required<boolean>();
   totalPages = input.required<number>();
   currentPage = input.required<number>();
   qrModeLabel = input('');

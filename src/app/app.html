@@ -37,15 +37,14 @@
       (disconnectSpotify)="state.disconnectSpotifyAccount()" (qrModeChange)="state.qrMode = $event"
       (save)="state.saveOrUpdateCard()" (clear)="state.resetForm()" />
 
-    <app-live-preview-panel [form]="state.form" [revealYear]="state.revealYear" [previewQr]="state.previewQr()"
-      (revealYearChange)="state.onRevealYearChange($event)" />
+    <app-live-preview-panel [form]="state.form" [previewQr]="state.previewQr()" />
   </section>
 
   <app-cards-section [filteredCards]="state.filteredCards" [pagedCards]="state.pagedCards"
     [selectedCardIds]="state.selectedCardIds" [difficulties]="state.difficulties" [searchQuery]="state.searchQuery"
     [difficultyFilter]="state.difficultyFilter" [sortMode]="state.sortMode" [selectedCount]="state.selectedCount"
     [allFilteredSelected]="state.allFilteredSelected" [cardsCount]="state.cards.length"
-    [pdfLoading]="state.pdfLoading()" [revealYear]="state.revealYear" [totalPages]="state.totalPages"
+    [pdfLoading]="state.pdfLoading()" [totalPages]="state.totalPages"
     [currentPage]="state.currentPage" [qrModeLabel]="state.getQrModeLabel(state.qrMode)"
     (searchQueryChange)="state.onSearchQueryChange($event)"
     (difficultyFilterChange)="state.onDifficultyFilterChange($event)" (sortModeChange)="state.onSortModeChange($event)"

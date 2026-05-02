@@ -7,24 +7,24 @@ test.describe('UI behaviors', { tag: ['@ui-behaviors', '@preview', '@regression'
     await resetStorage(page);
   });
 
-  test('toggles reveal year for preview and cards list', async ({ page }) => {
-    await seedCards(page, [makeCard({ id: 1, title: 'Reveal Song', year: 1998 })]);
-    await page.goto('/');
+  // test('toggles reveal year for preview and cards list', async ({ page }) => {
+  //   await seedCards(page, [makeCard({ id: 1, title: 'Reveal Song', year: 1998 })]);
+  //   await page.goto('/');
 
-    await fillRequiredCardForm(page, {
-      title: 'Preview Song',
-      artist: 'Preview Artist',
-      year: '2005',
-    });
+  //   await fillRequiredCardForm(page, {
+  //     title: 'Preview Song',
+  //     artist: 'Preview Artist',
+  //     year: '2005',
+  //   });
 
-    await expect(page.locator('.preview-year')).toContainText('2005');
-    await expect(page.locator('.grid .card .year').first()).toContainText('1998');
+  //   await expect(page.locator('.preview-year')).toContainText('2005');
+  //   await expect(page.locator('.grid .card .year').first()).toContainText('1998');
 
-    await page.getByLabel('Reveal year').uncheck();
+  //   await page.getByLabel('Reveal year').uncheck();
 
-    await expect(page.locator('.preview-year')).toContainText('YEAR');
-    await expect(page.locator('.grid .card .year').first()).toContainText('YEAR');
-  });
+  //   await expect(page.locator('.preview-year')).toContainText('YEAR');
+  //   await expect(page.locator('.grid .card .year').first()).toContainText('YEAR');
+  // });
 
   test('dismisses toast notifications from close button', async ({ page }) => {
     await page.goto('/');
