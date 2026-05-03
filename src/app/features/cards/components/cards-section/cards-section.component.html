@@ -81,22 +81,24 @@
   @if (pagedCards().length > 0) {
     <div class="grid">
       @for (card of pagedCards(); track card.id) {
-        <article class="card" [class.selected]="isSelected(card.id)" (click)="toggleSelect.emit(card.id)">
-          <h3 class="band">{{ card.artist }}</h3>
-          <p>{{ card.title }}</p>
-          <div class="year">{{ card.year }}</div>
-          <div class="split"></div>
-          <div class="chips">
-            <span>{{ card.difficulty }}</span>
-          </div>
-          <div class="qr-box">
-            <img [src]="card.qrDataUrl" alt="Card QR" />
-          </div>
+        <div class="card-container">
+          <article class="card" [class.selected]="isSelected(card.id)" (click)="toggleSelect.emit(card.id)">
+            <h3 class="band">{{ card.artist }}</h3>
+            <p>{{ card.title }}</p>
+            <div class="year">{{ card.year }}</div>
+            <div class="split"></div>
+            <div class="chips">
+              <span>{{ card.difficulty }}</span>
+            </div>
+            <div class="qr-box">
+              <img [src]="card.qrDataUrl" alt="Card QR" />
+            </div>
+          </article>
           <div class="card-actions" (click)="$event.stopPropagation()">
             <button class="btn btn-small" (click)="editCard.emit(card)">Edit</button>
             <button class="btn btn-small btn-danger" (click)="deleteCard.emit(card)">Delete</button>
           </div>
-        </article>
+        </div>
       }
     </div>
   } @else {
