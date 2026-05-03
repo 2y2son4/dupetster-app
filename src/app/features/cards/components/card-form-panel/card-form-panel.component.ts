@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, effect, input, output, signal } from '@angular/core';
+import { form, FormField } from '@angular/forms/signals';
 import {
   CardDraft,
   Difficulty,
@@ -11,11 +11,26 @@ import {
 @Component({
   selector: 'app-card-form-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormField],
   templateUrl: './card-form-panel.component.html',
 })
 export class CardFormPanelComponent {
   showSpotifyClientId = false;
+
+  readonly #emptyDraft: CardDraft = {
+    title: '',
+    artist: '',
+    year: null,
+    spotifyUrl: '',
+    difficulty: 'Original',
+  };
+
+  draftModel = signal<CardDraft>(this.#emptyDraft);
+  draftForm = form(this.draftModel);
+  spotifyAuthModel = signal({ clientId: '' });
+  spotifyAuthForm = form(this.spotifyAuthModel);
+  qrModeModel = signal<{ mode: QrPayloadMode }>({ mode: 'raw-url' });
+  qrModeForm = form(this.qrModeModel);
 
   form = input.required<CardDraft>();
   editingCardId = input<number | null>(null);
@@ -35,12 +50,32 @@ export class CardFormPanelComponent {
   save = output<void>();
   clear = output<void>();
 
-  currentYear = new Date().getFullYear();
+  constructor() {
+    effect(
+      () => {
+        this.draftModel.set(this.form());
+        this.spotifyAuthModel.set({ clientId: this.spotifyClientId() });
+        this.qrModeModel.set({ mode: this.qrMode() });
+      },
+      { allowSignalWrites: true },
+    );
+  }
 
-  onFieldChange<K extends keyof CardDraft>(key: K, value: CardDraft[K]): void {
-    this.formChange.emit({
-      ...this.form(),
-      [key]: value,
+  emitFormChange(): void {
+    queueMicrotask(() => {
+      this.formChange.emit(this.draftModel());
+    });
+  }
+
+  emitSpotifyClientIdChange(): void {
+    queueMicrotask(() => {
+      this.spotifyClientIdChange.emit(this.spotifyAuthModel().clientId);
+    });
+  }
+
+  emitQrModeChange(): void {
+    queueMicrotask(() => {
+      this.qrModeChange.emit(this.qrModeModel().mode);
     });
   }
 

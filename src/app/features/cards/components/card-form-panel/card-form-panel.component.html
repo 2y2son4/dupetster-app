@@ -4,8 +4,8 @@
   <div class="field">
     <label for="spotifyClientId">Spotify Client ID (for autofill)</label>
     <div class="input-with-action">
-      <input id="spotifyClientId" [type]="showSpotifyClientId ? 'text' : 'password'" [ngModel]="spotifyClientId()"
-        (ngModelChange)="spotifyClientIdChange.emit($event)" />
+      <input id="spotifyClientId" [type]="showSpotifyClientId ? 'text' : 'password'"
+        [formField]="spotifyAuthForm.clientId" (input)="emitSpotifyClientIdChange()" />
       <button class="btn btn-ghost btn-small btn-line" type="button"
         [attr.aria-label]="showSpotifyClientId ? 'Hide Spotify Client ID' : 'Show Spotify Client ID'"
         (click)="toggleSpotifyClientIdVisibility()">
@@ -17,7 +17,7 @@
     </small>
     <div class="actions">
       @if (!spotifyConnected()) {
-        <button class="btn btn-primary" type="button" [disabled]="!spotifyClientId().trim()"
+        <button class="btn btn-primary" type="button" [disabled]="!spotifyAuthModel().clientId.trim()"
           (click)="connectSpotify.emit()">Connect Spotify</button>
       } @else {
         <button class="btn btn-ghost" type="button" (click)="disconnectSpotify.emit()">Disconnect Spotify</button>
@@ -27,8 +27,7 @@
 
   <div class="field">
     <label for="spotify">Spotify URL *</label>
-    <input id="spotify" type="url" [ngModel]="form().spotifyUrl"
-      (ngModelChange)="onFieldChange('spotifyUrl', $event)" />
+    <input id="spotify" type="url" [formField]="draftForm.spotifyUrl" (input)="emitFormChange()" />
     <small class="field-help">Detected track ID: {{ detectedTrackId() }}</small>
     <small class="field-help">
       <b>Tip:</b> paste a valid Spotify track URL to auto-populate artist, song title, and year.
@@ -40,7 +39,7 @@
 
   <div class="field">
     <label for="qrMode">QR compatibility mode</label>
-    <select id="qrMode" [ngModel]="qrMode()" (ngModelChange)="qrModeChange.emit($event)">
+    <select id="qrMode" [formField]="qrModeForm.mode" (change)="emitQrModeChange()">
       @for (mode of qrModes(); track mode.value) {
         <option [value]="mode.value" [disabled]="mode.value !== 'raw-url'">{{ mode.label }}</option>
       }
@@ -50,23 +49,22 @@
 
   <div class="field">
     <label for="artist">Artist *</label>
-    <input id="artist" type="text" [ngModel]="form().artist" (ngModelChange)="onFieldChange('artist', $event)" />
+    <input id="artist" type="text" [formField]="draftForm.artist" (input)="emitFormChange()" />
   </div>
 
   <div class="field">
     <label for="title">Song title *</label>
-    <input id="title" type="text" [ngModel]="form().title" (ngModelChange)="onFieldChange('title', $event)" />
+    <input id="title" type="text" [formField]="draftForm.title" (input)="emitFormChange()" />
   </div>
 
   <div class="field">
     <label for="year">Release year *</label>
-    <input id="year" type="number" min="1400" max="{{currentYear}}" [ngModel]="form().year"
-      (ngModelChange)="onFieldChange('year', $event)" />
+    <input id="year" type="number" [formField]="draftForm.year" (input)="emitFormChange()" />
   </div>
 
   <div class="field">
     <label for="difficulty">Difficulty</label>
-    <select id="difficulty" [ngModel]="form().difficulty" (ngModelChange)="onFieldChange('difficulty', $event)">
+    <select id="difficulty" [formField]="draftForm.difficulty" (change)="emitFormChange()">
       @for (d of difficulties(); track d) {
         <option [value]="d">{{ d }}</option>
       }

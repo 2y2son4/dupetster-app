@@ -1,20 +1,27 @@
 <section class="right panel">
   <div class="filter-actions-container">
-    <div class="toolbar-controls">
-      <h2>Cards ({{ selectedCount() }}/{{ filteredCards().length }})</h2>
-      <input type="text" placeholder="Search title or artist" [ngModel]="searchQuery()"
-        (ngModelChange)="searchQueryChange.emit($event)" />
-      <select [ngModel]="difficultyFilter()" (ngModelChange)="difficultyFilterChange.emit($event)">
-        <option value="">All difficulties</option>
-        @for (d of difficulties(); track d) {
-          <option [value]="d">{{ d }}</option>
-        }
-      </select>
-      <select [ngModel]="sortMode()" (ngModelChange)="sortModeChange.emit($event)">
-        <option value="recent">Recent</option>
-        <option value="year">Year</option>
-        <option value="title">Title</option>
-      </select>
+    <div class="toolbar-controls-container">
+      <div class="toolbar-controls">
+        <h2>Cards ({{ selectedCount() }}/{{ filteredCards().length }})</h2>
+        <div class="left-filters-container">
+          <div class="left-filters">
+            <input type="text" placeholder="Search title or artist" [formField]="filtersForm.searchQuery"
+              (input)="emitSearchQueryChange()" />
+            <select [formField]="filtersForm.difficultyFilter" (change)="emitDifficultyFilterChange()">
+              <option value="">All difficulties</option>
+              @for (d of difficulties(); track d) {
+                <option [value]="d">{{ d }}</option>
+              }
+            </select>
+          </div>
+          <button class="btn btn-reset" (click)="resetFilters()">RESET</button>
+        </div>
+        <select [formField]="filtersForm.sortMode" (change)="emitSortModeChange()">
+          <option value="recent">Recent</option>
+          <option value="year">Year</option>
+          <option value="title">Title</option>
+        </select>
+      </div>
     </div>
 
     <div class="quick-actions">
@@ -63,13 +70,13 @@
     Current QR mode: <strong>{{ qrModeLabel() }}</strong>.
   </p>
 
-  @if (totalPages() > 1) {
+  <!-- @if (totalPages() > 1) { -->
     <div class="pager">
       <button class="btn btn-ghost" [disabled]="currentPage() === 1" (click)="previousPage.emit()">Previous</button>
       <span>Page {{ currentPage() }} / {{ totalPages() }}</span>
       <button class="btn btn-ghost" [disabled]="currentPage() === totalPages()" (click)="nextPage.emit()">Next</button>
     </div>
-  }
+  <!-- } -->
 
   @if (pagedCards().length > 0) {
     <div class="grid">
