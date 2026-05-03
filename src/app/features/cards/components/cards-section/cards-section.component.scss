@@ -65,7 +65,7 @@
   content: '';
   position: absolute;
   inset: 7px;
-  border: 1px solid #555;
+  border: 1px solid var(--subtle);
   border-radius: 0;
   pointer-events: none;
 }
@@ -205,7 +205,6 @@
 }
 
 @media (max-width: 750px) {
-
   .filter-actions-container {
     flex-direction: column;
   }
