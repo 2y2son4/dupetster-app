@@ -1,7 +1,7 @@
 <div class="central-column">
   <app-toast-layer [toasts]="state.toasts" (dismiss)="state.dismissToast($event)"></app-toast-layer>
 
-  <app-loader-overlay [isBusy]="state.isBusy()" [busyMessage]="state.busyMessage()"
+  <app-loader-overlay [isBusy]="state.$isBusy()" [busyMessage]="state.$busyMessage()"
     (dismiss)="state.dismissLoader()"></app-loader-overlay>
 
   <app-confirm-modal [visible]="state.isDeleteModalVisible" [title]="state.deleteModalTitle"
@@ -19,8 +19,8 @@
         [spotifyClientSecret]="state.spotifyClientSecret" [spotifyPlaylistInput]="state.spotifyPlaylistInput"
         [spotifyTrackListInput]="state.spotifyTrackListInput" [spotifyImportDifficulty]="state.spotifyImportDifficulty"
         [difficulties]="state.difficulties" [spotifyConnected]="state.spotifyConnected"
-        [spotifyImportLoading]="state.spotifyImportLoading()" [proxyImportLoading]="state.proxyImportLoading()"
-        [spotifyTrackListImportLoading]="state.spotifyTrackListImportLoading()"
+        [spotifyImportLoading]="state.$spotifyImportLoading()" [proxyImportLoading]="state.$proxyImportLoading()"
+        [spotifyTrackListImportLoading]="state.$spotifyTrackListImportLoading()"
         (spotifyClientIdChange)="state.spotifyClientId = $event"
         (spotifyClientSecretChange)="state.spotifyClientSecret = $event"
         (spotifyPlaylistInputChange)="state.spotifyPlaylistInput = $event"
@@ -33,7 +33,7 @@
       <app-card-form-panel [form]="state.form" [editingCardId]="state.editingCardId" [difficulties]="state.difficulties"
         [spotifyClientId]="state.spotifyClientId" [spotifyConnected]="state.spotifyConnected" [qrModes]="state.qrModes"
         [qrMode]="state.qrMode" [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)"
-        [spotifyAutofillLoading]="state.spotifyAutofillLoading()" (formChange)="state.onFormChange($event)"
+        [spotifyAutofillLoading]="state.$spotifyAutofillLoading()" (formChange)="state.onFormChange($event)"
         (spotifyClientIdChange)="state.spotifyClientId = $event" (connectSpotify)="state.connectSpotifyAccount()"
         (disconnectSpotify)="state.disconnectSpotifyAccount()" (qrModeChange)="state.qrMode = $event"
         (save)="state.saveOrUpdateCard()" (clear)="state.resetForm()" />
@@ -44,7 +44,7 @@
     <app-cards-section [filteredCards]="state.filteredCards" [pagedCards]="state.pagedCards"
       [selectedCardIds]="state.selectedCardIds" [difficulties]="state.difficulties" [searchQuery]="state.searchQuery"
       [difficultyFilter]="state.difficultyFilter" [sortMode]="state.sortMode" [selectedCount]="state.selectedCount"
-      [allFilteredSelected]="state.allFilteredSelected" [pdfLoading]="state.pdfLoading()"
+      [allFilteredSelected]="state.allFilteredSelected" [pdfLoading]="state.$pdfLoading()"
       [totalPages]="state.totalPages" [currentPage]="state.currentPage"
       [qrModeLabel]="state.getQrModeLabel(state.qrMode)" (searchQueryChange)="state.onSearchQueryChange($event)"
       (difficultyFilterChange)="state.onDifficultyFilterChange($event)"

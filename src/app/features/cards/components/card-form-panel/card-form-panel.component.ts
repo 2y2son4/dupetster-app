@@ -28,8 +28,8 @@ export class CardFormPanelComponent {
 
   draftModel = signal<CardDraft>(this.#emptyDraft);
   draftForm = form(this.draftModel);
-  spotifyAuthModel = signal({ clientId: '' });
-  spotifyAuthForm = form(this.spotifyAuthModel);
+  $spotifyAuthModel = signal({ clientId: '' });
+  spotifyAuthForm = form(this.$spotifyAuthModel);
   qrModeModel = signal<{ mode: QrPayloadMode }>({ mode: 'raw-url' });
   qrModeForm = form(this.qrModeModel);
 
@@ -55,7 +55,7 @@ export class CardFormPanelComponent {
     effect(
       () => {
         this.draftModel.set(this.form());
-        this.spotifyAuthModel.set({ clientId: this.spotifyClientId() });
+        this.$spotifyAuthModel.set({ clientId: this.spotifyClientId() });
         this.qrModeModel.set({ mode: this.qrMode() });
 
         if (this.spotifyConnected()) {
@@ -71,7 +71,7 @@ export class CardFormPanelComponent {
   }
 
   submitSpotifyConnect(): void {
-    const clientId = this.spotifyAuthModel().clientId.trim();
+    const clientId = this.$spotifyAuthModel().clientId.trim();
     if (!clientId) {
       return;
     }

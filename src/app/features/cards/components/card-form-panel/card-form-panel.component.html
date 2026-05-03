@@ -23,7 +23,7 @@
         Autofill track metadata requires Spotify authorization. Connect once to enable lookups.
       </small>
       <div class="actions">
-        <button class="btn btn-primary" type="button" [disabled]="!spotifyAuthModel().clientId.trim()"
+        <button class="btn btn-primary" type="button" [disabled]="!$spotifyAuthModel().clientId.trim()"
           (click)="submitSpotifyConnect()">Send</button>
       </div>
     }
@@ -36,7 +36,8 @@
     <input id="spotify" type="url" [formField]="draftForm.spotifyUrl" (input)="emitFormChange()" />
     <small class="field-help">Detected track ID: {{ detectedTrackId() }}</small>
     <small class="field-help">
-      <b>Tip:</b> paste a valid Spotify track URL after connecting to Spotify to auto-populate artist, song title, and year.
+      <b>Tip:</b> paste a valid Spotify track URL after connecting to Spotify to auto-populate artist, song title, and
+      year.
     </small>
     @if (spotifyAutofillLoading()) {
       <small class="field-help">Fetching track metadata from Spotify...</small>

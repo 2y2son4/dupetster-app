@@ -43,9 +43,9 @@ export class AppStateService {
   difficultyFilter = '';
   sortMode: SortMode = 'recent';
   currentPage = 1;
-  pdfLoading = signal(false);
+  $pdfLoading = signal(false);
   qrMode: QrPayloadMode = 'raw-url';
-  spotifyAutofillLoading = signal(false);
+  $spotifyAutofillLoading = signal(false);
 
   get toasts(): ToastMessage[] {
     return this.toast.toasts;
@@ -58,9 +58,9 @@ export class AppStateService {
   set spotifyClientId(value: string) {
     this.spotifyImport.spotifyClientId = value;
   }
-  #busyCount = signal(0);
-  busyMessage = signal('');
-  isBusy = computed(() => this.#busyCount() > 0);
+  #$busyCount = signal(0);
+  $busyMessage = signal('');
+  $isBusy = computed(() => this.#$busyCount() > 0);
   busyWatchdogHandle: number | null = null;
   busyStartedAt: number | null = null;
   #spotifyAutofillTimer: number | null = null;
@@ -86,7 +86,7 @@ export class AppStateService {
     void this.#completeSpotifyAuthFromRedirect();
 
     window.setInterval(() => {
-      if (!this.isBusy() || this.busyStartedAt === null) {
+      if (!this.$isBusy() || this.busyStartedAt === null) {
         return;
       }
 
@@ -296,7 +296,7 @@ export class AppStateService {
     this.form = this.#emptyDraft();
     this.editingCardId = null;
     this.#spotifyAutofilledTrackId = null;
-    this.spotifyAutofillLoading.set(false);
+    this.$spotifyAutofillLoading.set(false);
     this.#clearSpotifyAutofillTimer();
   }
 
@@ -399,7 +399,7 @@ export class AppStateService {
     }
 
     await this.#withLoadingFlag(
-      (value) => this.pdfLoading.set(value),
+      (value) => this.$pdfLoading.set(value),
       async () => {
         await this.#withBusy('Exporting PDF...', async () => {
           this.pdfExportService.exportCardsSheetPdf(
@@ -748,7 +748,7 @@ export class AppStateService {
 
       const updateProgress = async (forceYield = false): Promise<void> => {
         const percent = Math.round((processed / total) * 100);
-        this.busyMessage.set(`Imported ${processed}/${total} (${percent}%)...`);
+        this.$busyMessage.set(`Imported ${processed}/${total} (${percent}%)...`);
         if (forceYield || processed % 10 === 0) {
           await this.#yieldToUi();
         }
@@ -808,18 +808,18 @@ export class AppStateService {
   }
 
   #beginBusy(message: string): void {
-    if (this.#busyCount() === 0) {
+    if (this.#$busyCount() === 0) {
       this.busyStartedAt = Date.now();
     }
-    this.#busyCount.update((value) => value + 1);
-    this.busyMessage.set(message);
+    this.#$busyCount.update((value) => value + 1);
+    this.$busyMessage.set(message);
     this.#refreshBusyWatchdog();
   }
 
   #endBusy(): void {
-    this.#busyCount.update((value) => Math.max(0, value - 1));
-    if (this.#busyCount() === 0) {
-      this.busyMessage.set('');
+    this.#$busyCount.update((value) => Math.max(0, value - 1));
+    if (this.#$busyCount() === 0) {
+      this.$busyMessage.set('');
       this.busyStartedAt = null;
       this.#clearBusyWatchdog();
       return;
@@ -866,8 +866,8 @@ export class AppStateService {
   }
 
   #forceResetBusy(message: string): void {
-    this.#busyCount.set(0);
-    this.busyMessage.set('');
+    this.#$busyCount.set(0);
+    this.$busyMessage.set('');
     this.busyStartedAt = null;
     this.#clearBusyWatchdog();
     this.toast.push(message, 'warning');
@@ -1050,17 +1050,17 @@ export class AppStateService {
 
     const trackId = this.#extractSpotifyTrackId(spotifyUrl);
     if (!trackId) {
-      this.spotifyAutofillLoading.set(false);
+      this.$spotifyAutofillLoading.set(false);
       return;
     }
 
     if (trackId === this.#spotifyAutofilledTrackId) {
-      this.spotifyAutofillLoading.set(false);
+      this.$spotifyAutofillLoading.set(false);
       return;
     }
 
     const requestId = ++this.#spotifyAutofillRequestId;
-    this.spotifyAutofillLoading.set(true);
+    this.$spotifyAutofillLoading.set(true);
 
     this.#spotifyAutofillTimer = window.setTimeout(() => {
       void this.#autofillFormFromSpotifyTrack(trackId, requestId);
@@ -1122,7 +1122,7 @@ export class AppStateService {
       this.toast.push('Could not autofill metadata from that Spotify URL.', 'warning');
     } finally {
       if (requestId === this.#spotifyAutofillRequestId) {
-        this.spotifyAutofillLoading.set(false);
+        this.$spotifyAutofillLoading.set(false);
       }
     }
   }

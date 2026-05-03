@@ -16,9 +16,9 @@ export class SpotifyImportService {
   spotifyTrackListInput = '';
   spotifyImportDifficulty: Difficulty = 'Original';
 
-  spotifyImportLoading = signal(false);
-  spotifyTrackListImportLoading = signal(false);
-  proxyImportLoading = signal(false);
+  $spotifyImportLoading = signal(false);
+  $spotifyTrackListImportLoading = signal(false);
+  $proxyImportLoading = signal(false);
 
   constructor(
     private readonly spotifyApiService: SpotifyApiService,
@@ -74,7 +74,7 @@ export class SpotifyImportService {
       return null;
     }
 
-    this.spotifyImportLoading.set(true);
+    this.$spotifyImportLoading.set(true);
     this.persistSettings();
 
     try {
@@ -124,7 +124,7 @@ export class SpotifyImportService {
       this.#handlePlaylistError(error);
       return null;
     } finally {
-      this.spotifyImportLoading.set(false);
+      this.$spotifyImportLoading.set(false);
     }
   }
 
@@ -139,7 +139,7 @@ export class SpotifyImportService {
       return null;
     }
 
-    this.spotifyTrackListImportLoading.set(true);
+    this.$spotifyTrackListImportLoading.set(true);
     this.persistSettings();
 
     try {
@@ -176,7 +176,7 @@ export class SpotifyImportService {
       this.toast.push('Track list import failed. Check the pasted URLs and retry.', 'error');
       return null;
     } finally {
-      this.spotifyTrackListImportLoading.set(false);
+      this.$spotifyTrackListImportLoading.set(false);
     }
   }
 
@@ -187,7 +187,7 @@ export class SpotifyImportService {
       return null;
     }
 
-    this.proxyImportLoading.set(true);
+    this.$proxyImportLoading.set(true);
     this.persistSettings();
 
     try {
@@ -225,7 +225,7 @@ export class SpotifyImportService {
       );
       return null;
     } finally {
-      this.proxyImportLoading.set(false);
+      this.$proxyImportLoading.set(false);
     }
   }
 

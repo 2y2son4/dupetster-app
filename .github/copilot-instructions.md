@@ -37,6 +37,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 ## State Management
 
 - Use signals for local component state
+- Name signals with '$' prefix for regular signals and '#$' for private signals
 - Use `computed()` for derived state
 - Keep state transformations pure and predictable
 - Do NOT use `mutate` on signals, use `update` or `set` instead
