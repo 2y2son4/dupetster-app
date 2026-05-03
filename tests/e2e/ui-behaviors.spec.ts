@@ -54,7 +54,7 @@ test.describe('UI behaviors', { tag: ['@ui-behaviors', '@preview', '@regression'
     ]);
     await page.goto('/');
 
-    const targetCard = page.locator('.grid .card', { hasText: 'Edit Me' }).first();
+    const targetCard = page.locator('.grid .card-container', { hasText: 'Edit Me' }).first();
     await targetCard.getByRole('button', { name: 'Edit' }).click();
 
     await expect(page.getByRole('heading', { name: 'Edit Card' })).toBeVisible();

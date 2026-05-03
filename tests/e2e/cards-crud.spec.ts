@@ -14,7 +14,7 @@ test.describe('cards crud', { tag: ['@card-management', '@CRUD', '@actions'] }, 
 
     await page.goto('/');
 
-    const targetCard = page.locator('.grid .card', { hasText: 'Seed Song 2' }).first();
+    const targetCard = page.locator('.grid .card-container', { hasText: 'Seed Song 2' }).first();
     await targetCard.getByRole('button', { name: 'Edit' }).click();
     await page.getByLabel('Artist *').fill('Edited Artist');
     await page
@@ -23,7 +23,7 @@ test.describe('cards crud', { tag: ['@card-management', '@CRUD', '@actions'] }, 
     await page.getByRole('button', { name: 'Update Card' }).click();
 
     await expect(
-      page.locator('.grid .card', { hasText: 'Seed Song 2' }).locator('h3'),
+      page.locator('.grid .card-container', { hasText: 'Seed Song 2' }).locator('h3'),
     ).toContainText('Edited Artist', { timeout: 30000 });
     await expect(page.getByRole('button', { name: 'Dismiss Loader' })).not.toBeVisible({
       timeout: 5000,
@@ -38,7 +38,7 @@ test.describe('cards crud', { tag: ['@card-management', '@CRUD', '@actions'] }, 
 
     await page.goto('/');
 
-    const deleteTarget = page.locator('.grid .card', { hasText: 'Seed Song 2' }).first();
+    const deleteTarget = page.locator('.grid .card-container', { hasText: 'Seed Song 2' }).first();
     await deleteTarget.getByRole('button', { name: 'Delete' }).click();
 
     const modal = page.locator('.modal');
