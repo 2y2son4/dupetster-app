@@ -31,7 +31,6 @@ export class CardsSectionComponent {
   sortMode = input.required<SortMode>();
   selectedCount = input.required<number>();
   allFilteredSelected = input.required<boolean>();
-  cardsCount = input.required<number>();
   pdfLoading = input.required<boolean>();
   totalPages = input.required<number>();
   currentPage = input.required<number>();
@@ -45,7 +44,6 @@ export class CardsSectionComponent {
   exportPdf = output<void>();
   exportJson = output<void>();
   exportCsv = output<void>();
-  regenerateQr = output<void>();
   importJson = output<Event>();
   importCsv = output<Event>();
   toggleSelect = output<number>();
@@ -87,18 +85,6 @@ export class CardsSectionComponent {
 
   isSelected(cardId: number): boolean {
     return this.selectedCardIds().has(cardId);
-  }
-
-  trackById(_: number, card: MusicCard): number {
-    return card.id;
-  }
-
-  onImportJson(event: Event): void {
-    this.importJson.emit(event);
-  }
-
-  onImportCsv(event: Event): void {
-    this.importCsv.emit(event);
   }
 
   resetFilters(): void {

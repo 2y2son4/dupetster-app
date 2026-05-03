@@ -86,12 +86,6 @@ export class CardFormPanelComponent {
     });
   }
 
-  emitSpotifyClientIdChange(): void {
-    queueMicrotask(() => {
-      this.spotifyClientIdChange.emit(this.spotifyAuthModel().clientId);
-    });
-  }
-
   emitQrModeChange(): void {
     queueMicrotask(() => {
       this.qrModeChange.emit(this.qrModeModel().mode);

@@ -48,8 +48,9 @@
         </button>
 
         <input #jsonImportInput class="import-input" type="file" accept="application/json,.json"
-          (change)="onImportJson($event)" />
-        <input #csvImportInput class="import-input" type="file" accept="text/csv,.csv" (change)="onImportCsv($event)" />
+          (change)="importJson.emit($event)" />
+        <input #csvImportInput class="import-input" type="file" accept="text/csv,.csv"
+          (change)="importCsv.emit($event)" />
       </div>
 
       <div class="quick-actions-row">

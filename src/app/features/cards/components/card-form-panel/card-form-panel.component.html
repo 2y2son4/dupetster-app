@@ -1,6 +1,4 @@
-<article class="panel">
-  <h2>{{ editingCardId() ? 'Edit Card' : 'Create Card' }}</h2>
-
+<article class="panel margin-bottom-14">
   <div class="field">
     <div class="actions">
       @if (spotifyConnected()) {
@@ -14,7 +12,7 @@
       <label for="spotifyClientId">Spotify Client ID (for autofill)</label>
       <div class="input-with-action">
         <input id="spotifyClientId" [type]="showSpotifyClientId ? 'text' : 'password'"
-          [formField]="spotifyAuthForm.clientId" (input)="emitSpotifyClientIdChange()" />
+          [formField]="spotifyAuthForm.clientId" />
         <button class="btn btn-ghost btn-small btn-line" type="button"
           [attr.aria-label]="showSpotifyClientId ? 'Hide Spotify Client ID' : 'Show Spotify Client ID'"
           (click)="toggleSpotifyClientIdVisibility()">
@@ -30,13 +28,15 @@
       </div>
     }
   </div>
-
+</article>
+<article class="panel">
+  <h2>{{ editingCardId() ? 'Edit Card' : 'Create Card' }}</h2>
   <div class="field">
     <label for="spotify">Spotify URL *</label>
     <input id="spotify" type="url" [formField]="draftForm.spotifyUrl" (input)="emitFormChange()" />
     <small class="field-help">Detected track ID: {{ detectedTrackId() }}</small>
     <small class="field-help">
-      <b>Tip:</b> paste a valid Spotify track URL to auto-populate artist, song title, and year.
+      <b>Tip:</b> paste a valid Spotify track URL after connecting to Spotify to auto-populate artist, song title, and year.
     </small>
     @if (spotifyAutofillLoading()) {
       <small class="field-help">Fetching track metadata from Spotify...</small>
