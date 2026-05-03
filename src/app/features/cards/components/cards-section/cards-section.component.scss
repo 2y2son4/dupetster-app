@@ -1,11 +1,3 @@
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .toolbar-controls {
   display: flex;
   gap: 8px;
@@ -208,6 +200,23 @@
 
 @media (max-width: 1100px) {
   .quick-actions {
-    margin-top: 40px
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 750px) {
+
+  .filter-actions-container {
+    flex-direction: column;
+  }
+
+  .quick-actions {
+    margin-top: 0;
+    flex-direction: row;
+  }
+
+  .quick-actions-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

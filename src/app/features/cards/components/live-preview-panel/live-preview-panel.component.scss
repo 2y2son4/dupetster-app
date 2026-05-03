@@ -1,20 +1,6 @@
-// PDF card aspect ratio: 70mm wide × 99mm tall (A4 / 3×3)
-$card-aspect: calc(99 / 70);
-
 .preview-panel {
   display: block;
   height: 504px;
-}
-
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.toggle input {
-  width: auto;
 }
 
 .preview-card {
