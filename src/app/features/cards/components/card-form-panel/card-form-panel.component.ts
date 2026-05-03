@@ -16,6 +16,7 @@ import {
 })
 export class CardFormPanelComponent {
   showSpotifyClientId = false;
+  showSpotifyConnectPrompt = false;
 
   readonly #emptyDraft: CardDraft = {
     title: '',
@@ -56,9 +57,27 @@ export class CardFormPanelComponent {
         this.draftModel.set(this.form());
         this.spotifyAuthModel.set({ clientId: this.spotifyClientId() });
         this.qrModeModel.set({ mode: this.qrMode() });
+
+        if (this.spotifyConnected()) {
+          this.showSpotifyConnectPrompt = false;
+        }
       },
       { allowSignalWrites: true },
     );
+  }
+
+  openSpotifyConnectPrompt(): void {
+    this.showSpotifyConnectPrompt = true;
+  }
+
+  submitSpotifyConnect(): void {
+    const clientId = this.spotifyAuthModel().clientId.trim();
+    if (!clientId) {
+      return;
+    }
+
+    this.spotifyClientIdChange.emit(clientId);
+    this.connectSpotify.emit();
   }
 
   emitFormChange(): void {

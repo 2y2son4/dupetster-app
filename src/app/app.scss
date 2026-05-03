@@ -29,6 +29,11 @@ app-root {
   box-sizing: border-box;
 }
 
+.central-column {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 .hero {
   margin: 20px;
   padding: 18px 22px;
@@ -281,3 +286,8 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.margin-bottom-14 {
+  margin-bottom: 14px;
+}
+

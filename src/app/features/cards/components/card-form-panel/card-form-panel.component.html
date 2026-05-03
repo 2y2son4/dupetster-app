@@ -2,27 +2,33 @@
   <h2>{{ editingCardId() ? 'Edit Card' : 'Create Card' }}</h2>
 
   <div class="field">
-    <label for="spotifyClientId">Spotify Client ID (for autofill)</label>
-    <div class="input-with-action">
-      <input id="spotifyClientId" [type]="showSpotifyClientId ? 'text' : 'password'"
-        [formField]="spotifyAuthForm.clientId" (input)="emitSpotifyClientIdChange()" />
-      <button class="btn btn-ghost btn-small btn-line" type="button"
-        [attr.aria-label]="showSpotifyClientId ? 'Hide Spotify Client ID' : 'Show Spotify Client ID'"
-        (click)="toggleSpotifyClientIdVisibility()">
-        &#128065; {{ showSpotifyClientId ? 'Hide' : 'Show' }}
-      </button>
-    </div>
-    <small class="field-help">
-      Autofill track metadata requires Spotify authorization. Connect once to enable lookups.
-    </small>
     <div class="actions">
-      @if (!spotifyConnected()) {
-        <button class="btn btn-primary" type="button" [disabled]="!spotifyAuthModel().clientId.trim()"
-          (click)="connectSpotify.emit()">Connect Spotify</button>
-      } @else {
+      @if (spotifyConnected()) {
         <button class="btn btn-ghost" type="button" (click)="disconnectSpotify.emit()">Disconnect Spotify</button>
+      } @else if (!showSpotifyConnectPrompt) {
+        <button class="btn btn-primary" type="button" (click)="openSpotifyConnectPrompt()">Connect Spotify</button>
       }
     </div>
+
+    @if (!spotifyConnected() && showSpotifyConnectPrompt) {
+      <label for="spotifyClientId">Spotify Client ID (for autofill)</label>
+      <div class="input-with-action">
+        <input id="spotifyClientId" [type]="showSpotifyClientId ? 'text' : 'password'"
+          [formField]="spotifyAuthForm.clientId" (input)="emitSpotifyClientIdChange()" />
+        <button class="btn btn-ghost btn-small btn-line" type="button"
+          [attr.aria-label]="showSpotifyClientId ? 'Hide Spotify Client ID' : 'Show Spotify Client ID'"
+          (click)="toggleSpotifyClientIdVisibility()">
+          &#128065; {{ showSpotifyClientId ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      <small class="field-help">
+        Autofill track metadata requires Spotify authorization. Connect once to enable lookups.
+      </small>
+      <div class="actions">
+        <button class="btn btn-primary" type="button" [disabled]="!spotifyAuthModel().clientId.trim()"
+          (click)="submitSpotifyConnect()">Send</button>
+      </div>
+    }
   </div>
 
   <div class="field">

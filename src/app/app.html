@@ -1,62 +1,63 @@
-<app-toast-layer [toasts]="state.toasts" (dismiss)="state.dismissToast($event)"></app-toast-layer>
+<div class="central-column">
+  <app-toast-layer [toasts]="state.toasts" (dismiss)="state.dismissToast($event)"></app-toast-layer>
 
-<app-loader-overlay [isBusy]="state.isBusy()" [busyMessage]="state.busyMessage()"
-  (dismiss)="state.dismissLoader()"></app-loader-overlay>
+  <app-loader-overlay [isBusy]="state.isBusy()" [busyMessage]="state.busyMessage()"
+    (dismiss)="state.dismissLoader()"></app-loader-overlay>
 
-<app-confirm-modal [visible]="state.isDeleteModalVisible" [title]="state.deleteModalTitle"
-  [message]="state.deleteModalMessage" confirmLabel="Delete" (cancel)="state.cancelDelete()"
-  (confirm)="state.confirmDelete()"></app-confirm-modal>
+  <app-confirm-modal [visible]="state.isDeleteModalVisible" [title]="state.deleteModalTitle"
+    [message]="state.deleteModalMessage" confirmLabel="Delete" (cancel)="state.cancelDelete()"
+    (confirm)="state.confirmDelete()"></app-confirm-modal>
 
-<header class="hero">
-  <h1>Dupetster</h1>
-  <p>Create your timeline music cards</p>
-</header>
+  <header class="hero">
+    <h1>Dupetster</h1>
+    <p>Create your timeline music cards</p>
+  </header>
 
-<main class="page">
-  <section class="left">
-    <!-- <app-spotify-import-panel [spotifyClientId]="state.spotifyClientId"
-      [spotifyClientSecret]="state.spotifyClientSecret" [spotifyPlaylistInput]="state.spotifyPlaylistInput"
-      [spotifyTrackListInput]="state.spotifyTrackListInput" [spotifyImportDifficulty]="state.spotifyImportDifficulty"
-      [difficulties]="state.difficulties" [spotifyConnected]="state.spotifyConnected"
-      [spotifyImportLoading]="state.spotifyImportLoading()" [proxyImportLoading]="state.proxyImportLoading()"
-      [spotifyTrackListImportLoading]="state.spotifyTrackListImportLoading()"
-      (spotifyClientIdChange)="state.spotifyClientId = $event"
-      (spotifyClientSecretChange)="state.spotifyClientSecret = $event"
-      (spotifyPlaylistInputChange)="state.spotifyPlaylistInput = $event"
-      (spotifyTrackListInputChange)="state.spotifyTrackListInput = $event"
-      (spotifyImportDifficultyChange)="state.spotifyImportDifficulty = $event" (connect)="state.connectSpotifyAccount()"
-      (disconnect)="state.disconnectSpotifyAccount()" (importPlaylist)="state.importFromSpotifyPlaylist()"
-      (importProxy)="state.importFromPlaylistViaProxy()"
-      (importTrackList)="state.importFromSpotifyTrackList()" /> -->
+  <main class="page">
+    <section class="left">
+      <!-- <app-spotify-import-panel [spotifyClientId]="state.spotifyClientId"
+        [spotifyClientSecret]="state.spotifyClientSecret" [spotifyPlaylistInput]="state.spotifyPlaylistInput"
+        [spotifyTrackListInput]="state.spotifyTrackListInput" [spotifyImportDifficulty]="state.spotifyImportDifficulty"
+        [difficulties]="state.difficulties" [spotifyConnected]="state.spotifyConnected"
+        [spotifyImportLoading]="state.spotifyImportLoading()" [proxyImportLoading]="state.proxyImportLoading()"
+        [spotifyTrackListImportLoading]="state.spotifyTrackListImportLoading()"
+        (spotifyClientIdChange)="state.spotifyClientId = $event"
+        (spotifyClientSecretChange)="state.spotifyClientSecret = $event"
+        (spotifyPlaylistInputChange)="state.spotifyPlaylistInput = $event"
+        (spotifyTrackListInputChange)="state.spotifyTrackListInput = $event"
+        (spotifyImportDifficultyChange)="state.spotifyImportDifficulty = $event" (connect)="state.connectSpotifyAccount()"
+        (disconnect)="state.disconnectSpotifyAccount()" (importPlaylist)="state.importFromSpotifyPlaylist()"
+        (importProxy)="state.importFromPlaylistViaProxy()"
+        (importTrackList)="state.importFromSpotifyTrackList()" /> -->
 
-    <app-card-form-panel [form]="state.form" [editingCardId]="state.editingCardId" [difficulties]="state.difficulties"
-      [spotifyClientId]="state.spotifyClientId" [spotifyConnected]="state.spotifyConnected" [qrModes]="state.qrModes"
-      [qrMode]="state.qrMode" [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)"
-      [spotifyAutofillLoading]="state.spotifyAutofillLoading()" (formChange)="state.onFormChange($event)"
-      (spotifyClientIdChange)="state.spotifyClientId = $event" (connectSpotify)="state.connectSpotifyAccount()"
-      (disconnectSpotify)="state.disconnectSpotifyAccount()" (qrModeChange)="state.qrMode = $event"
-      (save)="state.saveOrUpdateCard()" (clear)="state.resetForm()" />
+      <app-card-form-panel [form]="state.form" [editingCardId]="state.editingCardId" [difficulties]="state.difficulties"
+        [spotifyClientId]="state.spotifyClientId" [spotifyConnected]="state.spotifyConnected" [qrModes]="state.qrModes"
+        [qrMode]="state.qrMode" [detectedTrackId]="state.getDetectedTrackId(state.form.spotifyUrl)"
+        [spotifyAutofillLoading]="state.spotifyAutofillLoading()" (formChange)="state.onFormChange($event)"
+        (spotifyClientIdChange)="state.spotifyClientId = $event" (connectSpotify)="state.connectSpotifyAccount()"
+        (disconnectSpotify)="state.disconnectSpotifyAccount()" (qrModeChange)="state.qrMode = $event"
+        (save)="state.saveOrUpdateCard()" (clear)="state.resetForm()" />
 
-    <app-live-preview-panel [form]="state.form" [previewQr]="state.previewQr()" />
-  </section>
+      <app-live-preview-panel [form]="state.form" [previewQr]="state.previewQr()" />
+    </section>
 
-  <app-cards-section [filteredCards]="state.filteredCards" [pagedCards]="state.pagedCards"
-    [selectedCardIds]="state.selectedCardIds" [difficulties]="state.difficulties" [searchQuery]="state.searchQuery"
-    [difficultyFilter]="state.difficultyFilter" [sortMode]="state.sortMode" [selectedCount]="state.selectedCount"
-    [allFilteredSelected]="state.allFilteredSelected" [cardsCount]="state.cards.length"
-    [pdfLoading]="state.pdfLoading()" [totalPages]="state.totalPages"
-    [currentPage]="state.currentPage" [qrModeLabel]="state.getQrModeLabel(state.qrMode)"
-    (searchQueryChange)="state.onSearchQueryChange($event)"
-    (difficultyFilterChange)="state.onDifficultyFilterChange($event)" (sortModeChange)="state.onSortModeChange($event)"
-    (toggleSelectAllFiltered)="state.toggleSelectAllFiltered()" (deleteSelected)="state.askDeleteSelected()"
-    (exportPdf)="state.exportPdf()" (exportJson)="state.exportJson()" (exportCsv)="state.exportCsv()"
-    (regenerateQr)="state.regenerateQrForAllCards()" (importJson)="state.onImportJson($event)"
-    (importCsv)="state.onImportCsv($event)" (toggleSelect)="state.toggleSelect($event)"
-    (editCard)="state.editCard($event)" (deleteCard)="state.askDelete($event)" (previousPage)="state.previousPage()"
-    (nextPage)="state.nextPage()" />
-</main>
-<footer class="page-footer">
-  <p>
-    Made by <a href="https://github.com/2y2son4" target="_blank" rel="noopener noreferrer"><b>2y2son4</b></a> and robots
-  </p>
-</footer>
+    <app-cards-section [filteredCards]="state.filteredCards" [pagedCards]="state.pagedCards"
+      [selectedCardIds]="state.selectedCardIds" [difficulties]="state.difficulties" [searchQuery]="state.searchQuery"
+      [difficultyFilter]="state.difficultyFilter" [sortMode]="state.sortMode" [selectedCount]="state.selectedCount"
+      [allFilteredSelected]="state.allFilteredSelected" [pdfLoading]="state.pdfLoading()"
+      [totalPages]="state.totalPages" [currentPage]="state.currentPage"
+      [qrModeLabel]="state.getQrModeLabel(state.qrMode)" (searchQueryChange)="state.onSearchQueryChange($event)"
+      (difficultyFilterChange)="state.onDifficultyFilterChange($event)"
+      (sortModeChange)="state.onSortModeChange($event)" (toggleSelectAllFiltered)="state.toggleSelectAllFiltered()"
+      (deleteSelected)="state.askDeleteSelected()" (exportPdf)="state.exportPdf()" (exportJson)="state.exportJson()"
+      (exportCsv)="state.exportCsv()" (importJson)="state.onImportJson($event)" (importCsv)="state.onImportCsv($event)"
+      (toggleSelect)="state.toggleSelect($event)" (editCard)="state.editCard($event)"
+      (deleteCard)="state.askDelete($event)" (previousPage)="state.previousPage()" (nextPage)="state.nextPage()" />
+  </main>
+  <footer class="page-footer">
+    <p>
+      Made by <a href="https://github.com/2y2son4" target="_blank" rel="noopener noreferrer"><b>2y2son4</b></a> and
+      robots
+    </p>
+  </footer>
+</div>
